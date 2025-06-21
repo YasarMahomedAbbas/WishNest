@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  familyMembers    FamilyMember[]
+  wishlistItems    WishlistItem[]
+  itemReservations ItemReservation[]
+
+  @@map("users")
+}
+
+model Family {
+  id          String   @id @default(cuid())
+  name        String
+  inviteCode  String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  members    FamilyMember[]
+  categories Category[]
+
+  @@map("families")
+}
+
+model FamilyMember {
+  id       String            @id @default(cuid())
+  userId   String
+  familyId String
+  role     FamilyMemberRole  @default(MEMBER)
+  status   FamilyMemberStatus @default(ACTIVE)
+  joinedAt DateTime          @default(now())
+
+  // Relationships
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, familyId])
+  @@map("family_members")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  familyId    String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  family        Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  wishlistItems WishlistItem[]
+
+  @@unique([name, familyId])
+  @@map("categories")
+}
+
+model WishlistItem {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  price       Decimal?
+  productUrl  String?
+  imageUrl    String?
+  priority    ItemPriority @default(MEDIUM)
+  notes       String?
+  userId      String
+  categoryId  String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relationships
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category          @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  reservations ItemReservation[]
+  priceHistory PriceHistory[]
+
+  @@map("wishlist_items")
+}
+
+model ItemReservation {
+  id             String            @id @default(cuid())
+  wishlistItemId String
+  userId         String
+  status         ReservationStatus @default(RESERVED)
+  purchaseNotes  String?
+  reservedAt     DateTime          @default(now())
+  purchasedAt    DateTime?
+
+  // Relationships
+  wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistItemId]) // Only one reservation per item
+  @@map("item_reservations")
+}
+
+model PriceHistory {
+  id             String   @id @default(cuid())
+  wishlistItemId String
+  price          Decimal
+  recordedAt     DateTime @default(now())
+
+  // Relationships
+  wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
+
+  @@map("price_history")
+}
+
+// Enums
+enum FamilyMemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum FamilyMemberStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum ItemPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ReservationStatus {
+  RESERVED
+  PURCHASED
+  CANCELLED
+} 
