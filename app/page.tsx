@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   LogOut,
   User,
+  Users,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -205,7 +206,17 @@ function FamilyWishlist() {
             </h2>
           </div>
           
-          <DropdownMenu>
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.href = '/families'}
+              className="border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Manage Families
+            </Button>
+            
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10">
@@ -230,8 +241,9 @@ function FamilyWishlist() {
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                          </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Header */}
