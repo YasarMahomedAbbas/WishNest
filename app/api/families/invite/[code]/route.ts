@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware } from '@/lib/api-middleware'
 import { validateInviteCode } from '@/lib/invite-codes'
-import { getFamilyStats } from '@/lib/family-utils'
+import { getFamilyStats } from '@/lib/family-service'
 import { createSuccessResponse, createValidationError } from '@/lib/api-errors'
 import { db } from '@/lib/db'
 

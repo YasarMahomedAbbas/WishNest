@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware, getValidatedBody } from '@/lib/api-middleware'
 import { joinFamilySchema } from '@/lib/validations'
 import { validateInviteCode } from '@/lib/invite-codes'
-import { checkFamilyMemberLimit } from '@/lib/family-utils'
+import { checkFamilyMemberLimit } from '@/lib/family-service'
 import { createSuccessResponse, createValidationError, createConflictError } from '@/lib/api-errors'
 import { db } from '@/lib/db'
 

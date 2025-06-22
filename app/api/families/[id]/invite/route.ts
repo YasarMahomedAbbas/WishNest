@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware } from '@/lib/api-middleware'
-import { getFamilyInviteInfo } from '@/lib/family-utils'
+import { getFamilyInviteInfo } from '@/lib/family-service'
 import { createSuccessResponse } from '@/lib/api-errors'
 
 export const GET = withMiddleware(async (request: NextRequest, { user, params }) => {

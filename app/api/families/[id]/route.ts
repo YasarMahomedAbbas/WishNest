@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware, getValidatedBody, getValidatedQuery } from '@/lib/api-middleware'
 import { updateFamilySchema, familyQuerySchema } from '@/lib/validations'
-import { getFamilyWithMembers, updateFamily, deleteFamily } from '@/lib/family-utils'
+import { getFamilyWithMembers, updateFamily, deleteFamily } from '@/lib/family-service'
 import { familyAuthMiddleware } from '@/lib/api-middleware'
 import { createSuccessResponse, createNotFoundError } from '@/lib/api-errors'
 

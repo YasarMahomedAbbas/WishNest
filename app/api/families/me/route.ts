@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware, getValidatedQuery } from '@/lib/api-middleware'
 import { familyQuerySchema } from '@/lib/validations'
-import { getUserFamilies } from '@/lib/family-utils'
+import { getUserFamilies } from '@/lib/family-service'
 import { createSuccessResponse } from '@/lib/api-errors'
 
 export const GET = withMiddleware(async (request: NextRequest, { user }) => {

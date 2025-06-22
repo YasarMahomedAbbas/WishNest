@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware } from '@/lib/api-middleware'
-import { getFamilyWithMembers } from '@/lib/family-utils'
+import { getFamilyWithMembers } from '@/lib/family-service'
 import { familyAuthMiddleware } from '@/lib/api-middleware'
 import { createSuccessResponse, createNotFoundError } from '@/lib/api-errors'
 

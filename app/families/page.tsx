@@ -12,7 +12,10 @@ import {
   Copy,
   RefreshCw,
   Trash2,
-  ArrowLeft
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  UserMinus
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -77,6 +80,10 @@ function FamiliesPage() {
   const [isCreating, setIsCreating] = useState(false)
   const [newFamily, setNewFamily] = useState({ name: '', description: '' })
   const [inviteInfo, setInviteInfo] = useState<any>(null)
+  const [isAddingMember, setIsAddingMember] = useState(false)
+  const [isCreatingMember, setIsCreatingMember] = useState(false)
+  const [newMember, setNewMember] = useState({ name: '', email: '', password: '' })
+  const [showPassword, setShowPassword] = useState(true)
 
   useEffect(() => {
     fetchFamily()
@@ -224,6 +231,222 @@ function FamiliesPage() {
       title: 'Copied!',
       description: 'Invite link copied to clipboard'
     })
+  }
+
+  const generatePassword = () => {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    let password = ''
+    for (let i = 0; i < 8; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return password
+  }
+
+  const refreshPassword = () => {
+    const newPassword = generatePassword()
+    setNewMember({ ...newMember, password: newPassword })
+  }
+
+  const removeFamilyMember = async (userId: string, userName: string) => {
+    try {
+      const response = await fetch(`/api/families/${family!.id}/members/${userId}`, {
+        method: 'DELETE'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: 'Success',
+          description: `${userName} has been removed from the family`
+        })
+        fetchFamily()
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error?.message || 'Failed to remove family member',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to remove family member',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const deleteFamilyMemberAccount = async (userId: string, userName: string) => {
+    try {
+      const response = await fetch(`/api/families/${family!.id}/members/${userId}?deleteAccount=true`, {
+        method: 'DELETE'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: 'Success',
+          description: `${userName}'s account has been deleted completely`
+        })
+        fetchFamily()
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error?.message || 'Failed to delete member account',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete member account',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const promoteFamilyMember = async (userId: string, userName: string) => {
+    try {
+      const response = await fetch(`/api/families/${family!.id}/members/${userId}/promote`, {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: 'Success',
+          description: `${userName} has been promoted to admin`
+        })
+        fetchFamily()
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error?.message || 'Failed to promote family member',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to promote family member',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const demoteFamilyAdmin = async (userId: string, userName: string) => {
+    try {
+      const response = await fetch(`/api/families/${family!.id}/members/${userId}/demote`, {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast({
+          title: 'Success',
+          description: `${userName} has been demoted to member`
+        })
+        fetchFamily()
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error?.message || 'Failed to demote family admin',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to demote family admin',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  // Auto-generate password when dialog opens
+  useEffect(() => {
+    if (isAddingMember && !newMember.password) {
+      const initialPassword = generatePassword()
+      setNewMember({ ...newMember, password: initialPassword })
+    }
+  }, [isAddingMember])
+
+  const createFamilyMember = async () => {
+    if (!newMember.name.trim() || !newMember.email.trim() || !newMember.password.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Name, email, and password are required',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    if (!family) {
+      toast({
+        title: 'Error',
+        description: 'No family found',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setIsCreatingMember(true)
+    
+    try {
+      console.log('Creating family member...', { familyId: family.id, name: newMember.name, email: newMember.email })
+      
+      const response = await fetch('/api/families/create-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          familyId: family.id,
+          name: newMember.name.trim(),
+          email: newMember.email.trim(),
+          password: newMember.password.trim()
+        })
+      })
+      
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('Response data:', data)
+      
+      if (data.success) {
+        toast({
+          title: 'Success',
+          description: `${newMember.name} has been added to the family!`,
+          duration: 5000
+        })
+        
+        setNewMember({ name: '', email: '', password: '' })
+        setIsAddingMember(false) // Close the dialog
+        fetchFamily() // Refresh the family data
+      } else {
+        toast({
+          title: 'Error',
+          description: data.error?.message || 'Failed to create family member',
+          variant: 'destructive'
+        })
+      }
+    } catch (error) {
+      console.error('Error creating family member:', error)
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to create family member',
+        variant: 'destructive'
+      })
+    } finally {
+      console.log('Resetting loading state')
+      setIsCreatingMember(false)
+    }
   }
 
   if (loading) {
@@ -471,10 +694,120 @@ function FamiliesPage() {
             {/* Family Members */}
             <Card className="rounded-2xl shadow-lg border border-slate-200">
               <CardHeader>
-                <CardTitle className="text-xl text-slate-900">Family Members</CardTitle>
-                <CardDescription className="text-slate-600">
-                  Everyone who's part of your family group
-                </CardDescription>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-xl text-slate-900">Family Members</CardTitle>
+                    <CardDescription className="text-slate-600">
+                      Everyone who's part of your family group
+                    </CardDescription>
+                  </div>
+                  {family.membershipRole === 'ADMIN' && (
+                    <Dialog open={isAddingMember} onOpenChange={setIsAddingMember}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Add Member
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-md rounded-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-bold text-slate-800">Add Family Member</DialogTitle>
+                          <DialogDescription className="text-slate-600">
+                            Create a new account for a family member. They'll be able to log in with the temporary password.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="memberName" className="text-slate-700 font-medium">Full Name</Label>
+                            <Input
+                              id="memberName"
+                              value={newMember.name}
+                              onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                              placeholder="e.g., John Smith"
+                              className="mt-1 border-slate-300 rounded-xl"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="memberEmail" className="text-slate-700 font-medium">Email Address</Label>
+                            <Input
+                              id="memberEmail"
+                              type="email"
+                              value={newMember.email}
+                              onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
+                              placeholder="john@example.com"
+                              className="mt-1 border-slate-300 rounded-xl"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="memberPassword" className="text-slate-700 font-medium">Temporary Password</Label>
+                            <div className="flex gap-2 mt-1">
+                              <div className="relative flex-1">
+                                <Input
+                                  id="memberPassword"
+                                  type={showPassword ? "text" : "password"}
+                                  value={newMember.password}
+                                  onChange={(e) => setNewMember({ ...newMember, password: e.target.value })}
+                                  placeholder="Password"
+                                  className="border-slate-300 rounded-xl pr-10"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                                >
+                                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={refreshPassword}
+                                className="border-slate-300 rounded-xl hover:bg-slate-50"
+                                title="Generate new password"
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigator.clipboard.writeText(newMember.password)}
+                                className="border-slate-300 rounded-xl hover:bg-slate-50"
+                                title="Copy password"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="bg-blue-50 p-3 rounded-xl">
+                            <p className="text-sm text-blue-800">
+                              <strong>Note:</strong> Share this temporary password with the new member so they can log in. They can change it later in their account settings.
+                            </p>
+                          </div>
+                          <div className="flex gap-3">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsAddingMember(false)}
+                              className="flex-1 border-slate-300 rounded-xl hover:bg-slate-50"
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              onClick={createFamilyMember} 
+                              disabled={isCreatingMember}
+                              className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl"
+                            >
+                              {isCreatingMember ? 'Creating...' : 'Add Member'}
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -495,6 +828,138 @@ function FamiliesPage() {
                         </Badge>
                         {member.role === 'ADMIN' && (
                           <Crown className="h-4 w-4 text-yellow-500" />
+                        )}
+                        {family.membershipRole === 'ADMIN' && member.role === 'ADMIN' && member.userId !== user?.id && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0 border-blue-300 text-blue-600 hover:bg-blue-50 ml-2"
+                                title="Demote from admin"
+                              >
+                                <UserMinus className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Demote Admin</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to demote {member.user.name} from admin to regular member? 
+                                  They will lose all administrative privileges including the ability to manage family members and settings.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={() => demoteFamilyAdmin(member.userId, member.user.name)}
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                  Demote to Member
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                        {family.membershipRole === 'ADMIN' && member.role !== 'ADMIN' && member.userId !== user?.id && (
+                          <div className="flex gap-1 ml-3">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 border-green-300 text-green-600 hover:bg-green-50"
+                                  title="Promote to admin"
+                                >
+                                  <Crown className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Promote to Admin</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to promote {member.user.name} to admin? 
+                                    They will have full administrative privileges including the ability to manage family members and settings.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => promoteFamilyMember(member.userId, member.user.name)}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    Promote to Admin
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 border-orange-300 text-orange-600 hover:bg-orange-50"
+                                  title="Remove from family"
+                                >
+                                  <UserPlus className="h-3 w-3 rotate-45" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Remove Family Member</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to remove {member.user.name} from the family? 
+                                    They will no longer have access to family wishlists, but their account will remain active.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => removeFamilyMember(member.userId, member.user.name)}
+                                    className="bg-orange-600 hover:bg-orange-700"
+                                  >
+                                    Remove from Family
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 border-red-300 text-red-600 hover:bg-red-50"
+                                  title="Delete account permanently"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Member Account</AlertDialogTitle>
+                                  <AlertDialogDescription className="space-y-2">
+                                    <p>
+                                      <strong>Warning:</strong> This will permanently delete {member.user.name}'s account and all associated data.
+                                    </p>
+                                    <p>
+                                      This includes their wishlists, reservations, and all other account information. This action cannot be undone.
+                                    </p>
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => deleteFamilyMemberAccount(member.userId, member.user.name)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete Account Permanently
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
                         )}
                       </div>
                     </div>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware } from '@/lib/api-middleware'
-import { removeFamilyMember } from '@/lib/family-utils'
+import { removeFamilyMember, deleteFamilyMemberAccount } from '@/lib/family-service'
 import { createSuccessResponse } from '@/lib/api-errors'
 
 export const DELETE = withMiddleware(async (request: NextRequest, { user, params }) => {
@@ -12,11 +12,21 @@ export const DELETE = withMiddleware(async (request: NextRequest, { user, params
   const familyId = resolvedParams.id
   const targetUserId = resolvedParams.userId
   
-  await removeFamilyMember(familyId, user.id, targetUserId)
+  // Check if we should delete the account completely
+  const url = new URL(request.url)
+  const deleteAccount = url.searchParams.get('deleteAccount') === 'true'
   
-  return createSuccessResponse({
-    message: 'Family member removed successfully'
-  })
+  if (deleteAccount) {
+    await deleteFamilyMemberAccount(familyId, user.id, targetUserId)
+    return createSuccessResponse({
+      message: 'Family member account deleted successfully'
+    })
+  } else {
+    await removeFamilyMember(familyId, user.id, targetUserId)
+    return createSuccessResponse({
+      message: 'Family member removed successfully'
+    })
+  }
 }, {
   requireAuth: true,
   allowedMethods: ['DELETE']

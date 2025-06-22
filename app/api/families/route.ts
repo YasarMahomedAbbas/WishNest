@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { withMiddleware, getValidatedBody } from '@/lib/api-middleware'
 import { createFamilySchema } from '@/lib/validations'
-import { createFamily } from '@/lib/family-utils'
+import { createFamily } from '@/lib/family-service'
 import { createSuccessResponse } from '@/lib/api-errors'
 
 export const POST = withMiddleware(async (request: NextRequest, { user }) => {
