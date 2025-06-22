@@ -18,6 +18,19 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Authentication fields
+  emailVerified     Boolean   @default(false)
+  emailVerifyToken  String?   @unique
+  resetPasswordToken String?  @unique
+  resetPasswordExpires DateTime?
+  
+  // Account lockout fields
+  failedLoginAttempts Int       @default(0)
+  lockoutUntil       DateTime?
+  
+  // Session management
+  refreshTokens RefreshToken[]
+
   // Relationships
   familyMembers    FamilyMember[]
   wishlistItems    WishlistItem[]
@@ -124,6 +137,20 @@ model PriceHistory {
   wishlistItem WishlistItem @relation(fields: [wishlistItemId], references: [id], onDelete: Cascade)
 
   @@map("price_history")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  isRevoked Boolean  @default(false)
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
 }
 
 // Enums

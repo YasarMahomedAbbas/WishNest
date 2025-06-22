@@ -3,58 +3,115 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Checkbox } from "@/components/ui/checkbox"
+import { useRouter } from "next/navigation"
 
 export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
+  
   const [signInData, setSignInData] = useState({
     email: "",
     password: "",
+    rememberMe: false
   })
   const [signUpData, setSignUpData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
+    name: ""
   })
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: signInData.email,
+          password: signInData.password,
+          rememberMe: signInData.rememberMe
+        }),
+      })
 
-    console.log("Sign in:", signInData)
-    setIsLoading(false)
+      const data = await response.json()
 
-    // Redirect to main app (in real app, you'd handle this properly)
-    window.location.href = "/"
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Login failed')
+      }
+
+      if (data.success) {
+        // Redirect to main page
+        router.push('/')
+      }
+    } catch (error: any) {
+      console.error('Sign in error:', error)
+      setError(error.message || 'An error occurred during login')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError("")
 
     if (signUpData.password !== signUpData.confirmPassword) {
-      alert("Passwords don't match!")
+      setError("Passwords don't match!")
+      return
+    }
+
+    if (!signUpData.name.trim()) {
+      setError("Name is required!")
       return
     }
 
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: signUpData.email,
+          password: signUpData.password,
+          confirmPassword: signUpData.confirmPassword,
+          name: signUpData.name
+        }),
+      })
 
-    console.log("Sign up:", { email: signUpData.email, password: signUpData.password })
-    setIsLoading(false)
+      const data = await response.json()
 
-    // Redirect to main app (in real app, you'd handle this properly)
-    window.location.href = "/"
+      if (!response.ok) {
+        throw new Error(data.error?.message || 'Registration failed')
+      }
+
+      if (data.success) {
+        // Redirect to main page
+        router.push('/')
+      }
+    } catch (error: any) {
+      console.error('Sign up error:', error)
+      setError(error.message || 'An error occurred during registration')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -67,11 +124,18 @@ export default function AuthPage() {
               <Sparkles className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Family Wishlist
+              WishNest
             </h1>
           </div>
           <p className="text-slate-600">Welcome back! Sign in to your account or create a new one.</p>
         </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
 
         {/* Auth Card */}
         <Card className="shadow-2xl border-0 rounded-3xl overflow-hidden">
@@ -142,6 +206,18 @@ export default function AuthPage() {
                     </div>
                   </div>
 
+                  {/* Remember Me Checkbox */}
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="remember-me" 
+                      checked={signInData.rememberMe}
+                      onCheckedChange={(checked) => setSignInData({ ...signInData, rememberMe: !!checked })}
+                    />
+                    <Label htmlFor="remember-me" className="text-sm text-slate-700">
+                      Remember me (30 days vs 7 days)
+                    </Label>
+                  </div>
+
                   <Button
                     type="submit"
                     disabled={isLoading}
@@ -178,6 +254,24 @@ export default function AuthPage() {
               <CardContent className="px-8 pb-8">
                 <form onSubmit={handleSignUp} className="space-y-6">
                   <div className="space-y-2">
+                    <Label htmlFor="signup-name" className="text-slate-700 font-medium">
+                      Full Name
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        id="signup-name"
+                        type="text"
+                        placeholder="Enter your full name"
+                        value={signUpData.name}
+                        onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
+                        className="pl-10 border-slate-300 rounded-xl h-12"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="signup-email" className="text-slate-700 font-medium">
                       Email
                     </Label>
@@ -209,7 +303,7 @@ export default function AuthPage() {
                         onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
                         className="pl-10 pr-10 border-slate-300 rounded-xl h-12"
                         required
-                        minLength={6}
+                        minLength={8}
                       />
                       <button
                         type="button"
@@ -219,6 +313,9 @@ export default function AuthPage() {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    <p className="text-xs text-slate-500">
+                      Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -235,7 +332,7 @@ export default function AuthPage() {
                         onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
                         className="pl-10 border-slate-300 rounded-xl h-12"
                         required
-                        minLength={6}
+                        minLength={8}
                       />
                     </div>
                   </div>
@@ -275,7 +372,7 @@ export default function AuthPage() {
         <div className="text-center mt-8">
           <p className="text-sm text-slate-500">
             Need help? Contact{" "}
-            <button className="text-purple-600 hover:text-purple-700 font-medium">support@familywishlist.com</button>
+            <button className="text-purple-600 hover:text-purple-700 font-medium">support@wishnest.com</button>
           </p>
         </div>
       </div>

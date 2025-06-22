@@ -139,8 +139,16 @@ export function rateLimitMiddleware(request: NextRequest) {
 
 // Authentication middleware
 export async function authMiddleware(request: NextRequest): Promise<{ id: string; email: string; name: string }> {
+  // First try Authorization header
   const authHeader = request.headers.get('authorization')
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+  let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
+  
+  // If no Authorization header, try cookies
+  if (!token) {
+    const { cookies } = await import('next/headers')
+    const cookieStore = await cookies()
+    token = cookieStore.get('access_token')?.value || null
+  }
   
   if (!token) {
     throw createAuthenticationError('Authorization token is required')

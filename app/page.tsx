@@ -11,6 +11,8 @@ import {
   ShoppingBag,
   Search,
   SlidersHorizontal,
+  LogOut,
+  User,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,6 +31,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth, withAuth } from "@/contexts/AuthContext"
 
 interface WishlistItem {
   id: string
@@ -145,7 +157,8 @@ const initialWishlist: WishlistItem[] = [
   },
 ]
 
-export default function FamilyWishlist() {
+function FamilyWishlist() {
+  const { user, logout } = useAuth()
   const [wishlist, setWishlist] = useState<WishlistItem[]>(initialWishlist)
   const [isAddingItem, setIsAddingItem] = useState(false)
   const [currentUser, setCurrentUser] = useState("alex")
@@ -169,6 +182,14 @@ export default function FamilyWishlist() {
   }
 
   const selectedMemberInfo = getMemberInfo(selectedMember)
+
+  const handleLogout = async () => {
+    try {
+      await logout()
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
 
   const filteredAndSortedItems = useMemo(() => {
     let items = wishlist.filter((item) => item.addedBy === selectedMember)
@@ -280,11 +301,51 @@ export default function FamilyWishlist() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Authentication Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              WishNest
+            </h2>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src="" alt={user?.name} />
+                  <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">{user?.name}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user?.email}
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl">
-              <Sparkles className="w-8 h-8 text-white" />
+              <Gift className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Family Wishlist
@@ -299,8 +360,8 @@ export default function FamilyWishlist() {
         <div className="flex justify-center mb-8">
           <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-200">
             <div className="flex items-center gap-4">
-              <Label className="text-slate-700 font-medium">Signed in as:</Label>
-              <Select value={currentUser} onValueChange={setCurrentUser}>
+              <Label className="text-slate-700 font-medium">Viewing wishlist for:</Label>
+              <Select value={selectedMember} onValueChange={setSelectedMember}>
                 <SelectTrigger className="w-40 border-slate-300">
                   <SelectValue />
                 </SelectTrigger>
@@ -697,3 +758,6 @@ export default function FamilyWishlist() {
     </div>
   )
 }
+
+// Export with authentication protection
+export default withAuth(FamilyWishlist)
