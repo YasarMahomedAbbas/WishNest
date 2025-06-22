@@ -55,114 +55,12 @@ interface WishlistItem {
   category?: string
 }
 
-const familyMembers = [
-  { id: "mom", name: "Mom", color: "from-rose-400 to-pink-500", initial: "M" },
-  { id: "dad", name: "Dad", color: "from-blue-400 to-indigo-500", initial: "D" },
-  { id: "alex", name: "Alex", color: "from-emerald-400 to-green-500", initial: "A" },
-  { id: "sarah", name: "Sarah", color: "from-purple-400 to-violet-500", initial: "S" },
-]
-
 const categories = ["Electronics", "Books", "Games", "Home", "Fashion", "Sports", "Other"]
-
-const initialWishlist: WishlistItem[] = [
-  {
-    id: "1",
-    title: "Cyberpunk 2077",
-    description: "Open-world action-adventure RPG with stunning visuals",
-    price: 29.99,
-    link: "https://store.steampowered.com/app/1091500/Cyberpunk_2077/",
-    addedBy: "alex",
-    addedDate: "2024-01-15",
-    status: "available",
-    category: "Games",
-  },
-  {
-    id: "2",
-    title: "Instant Pot Duo 7-in-1",
-    description: "Electric pressure cooker for quick and healthy meals",
-    price: 79.95,
-    link: "https://amazon.com/instant-pot-duo",
-    addedBy: "mom",
-    addedDate: "2024-01-10",
-    status: "claimed",
-    claimedBy: "dad",
-    category: "Home",
-  },
-  {
-    id: "3",
-    title: "Sony WH-1000XM4 Headphones",
-    description: "Industry-leading noise canceling wireless headphones",
-    price: 199.99,
-    link: "https://amazon.com/sony-headphones",
-    addedBy: "sarah",
-    addedDate: "2024-01-12",
-    status: "available",
-    category: "Electronics",
-  },
-  {
-    id: "4",
-    title: "The Art of War - Sun Tzu",
-    description: "Timeless classic on strategy and leadership",
-    price: 12.99,
-    link: "https://amazon.com/art-of-war",
-    addedBy: "dad",
-    addedDate: "2024-01-08",
-    status: "purchased",
-    category: "Books",
-  },
-  {
-    id: "5",
-    title: "Nintendo Switch Pro Controller",
-    description: "Enhanced wireless controller for Nintendo Switch",
-    price: 69.99,
-    link: "https://nintendo.com/pro-controller",
-    addedBy: "alex",
-    addedDate: "2024-01-20",
-    status: "available",
-    category: "Games",
-  },
-  {
-    id: "6",
-    title: "Yoga Mat Premium",
-    description: "Non-slip exercise mat for yoga and fitness",
-    price: 45.0,
-    link: "https://amazon.com/yoga-mat",
-    addedBy: "sarah",
-    addedDate: "2024-01-18",
-    status: "claimed",
-    claimedBy: "mom",
-    category: "Sports",
-  },
-  {
-    id: "7",
-    title: "Coffee Grinder Burr",
-    description: "Professional burr coffee grinder for perfect coffee",
-    price: 129.99,
-    link: "https://amazon.com/coffee-grinder",
-    addedBy: "dad",
-    addedDate: "2024-01-22",
-    status: "available",
-    category: "Home",
-  },
-  {
-    id: "8",
-    title: "Wireless Charging Pad",
-    description: "Fast wireless charger for smartphones",
-    price: 24.99,
-    link: "https://amazon.com/wireless-charger",
-    addedBy: "alex",
-    addedDate: "2024-01-25",
-    status: "available",
-    category: "Electronics",
-  },
-]
 
 function FamilyWishlist() {
   const { user, logout } = useAuth()
-  const [wishlist, setWishlist] = useState<WishlistItem[]>(initialWishlist)
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([])
   const [isAddingItem, setIsAddingItem] = useState(false)
-  const [currentUser, setCurrentUser] = useState("alex")
-  const [selectedMember, setSelectedMember] = useState("alex")
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [categoryFilter, setCategoryFilter] = useState("all")
@@ -177,12 +75,6 @@ function FamilyWishlist() {
     category: "",
   })
 
-  const getMemberInfo = (memberId: string) => {
-    return familyMembers.find((member) => member.id === memberId) || familyMembers[0]
-  }
-
-  const selectedMemberInfo = getMemberInfo(selectedMember)
-
   const handleLogout = async () => {
     try {
       await logout()
@@ -192,7 +84,7 @@ function FamilyWishlist() {
   }
 
   const filteredAndSortedItems = useMemo(() => {
-    let items = wishlist.filter((item) => item.addedBy === selectedMember)
+    let items = wishlist.filter((item) => item.addedBy === user?.id)
 
     // Search filter
     if (searchQuery) {
@@ -236,20 +128,20 @@ function FamilyWishlist() {
     }
 
     return items
-  }, [wishlist, selectedMember, searchQuery, statusFilter, categoryFilter, priceRange, sortBy])
+  }, [wishlist, user?.id, searchQuery, statusFilter, categoryFilter, priceRange, sortBy])
 
   const displayedItems = filteredAndSortedItems.slice(0, itemsToShow)
   const hasMoreItems = filteredAndSortedItems.length > itemsToShow
 
   const handleAddItem = () => {
-    if (newItem.title && newItem.price && newItem.link) {
+    if (newItem.title && newItem.price && newItem.link && user?.id) {
       const item: WishlistItem = {
         id: Date.now().toString(),
         title: newItem.title,
         description: newItem.description,
         price: Number.parseFloat(newItem.price),
         link: newItem.link,
-        addedBy: currentUser,
+        addedBy: user.id,
         addedDate: new Date().toISOString().split("T")[0],
         status: "available",
         category: newItem.category || "Other",
@@ -261,8 +153,9 @@ function FamilyWishlist() {
   }
 
   const handleClaimItem = (itemId: string) => {
+    if (!user?.id) return
     setWishlist(
-      wishlist.map((item) => (item.id === itemId ? { ...item, status: "claimed", claimedBy: currentUser } : item)),
+      wishlist.map((item) => (item.id === itemId ? { ...item, status: "claimed", claimedBy: user.id } : item)),
     )
   }
 
@@ -279,7 +172,7 @@ function FamilyWishlist() {
       case "claimed":
         return (
           <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200">
-            Claimed by {getMemberInfo(item.claimedBy!).name}
+            Claimed by {item.claimedBy === user?.id ? 'You' : 'Someone'}
           </Badge>
         )
       case "purchased":
@@ -348,184 +241,124 @@ function FamilyWishlist() {
               <Gift className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Family Wishlist
+              My Wishlist
             </h1>
           </div>
           <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-            Share your dreams, spread the joy. Make gift-giving magical for everyone.
+            Create and manage your personal wishlist. Share your dreams and make gift-giving easier for everyone.
           </p>
         </div>
 
-        {/* User Selector */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white rounded-2xl p-4 shadow-lg border border-slate-200">
-            <div className="flex items-center gap-4">
-              <Label className="text-slate-700 font-medium">Viewing wishlist for:</Label>
-              <Select value={selectedMember} onValueChange={setSelectedMember}>
-                <SelectTrigger className="w-40 border-slate-300">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {familyMembers.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${member.color}`} />
-                        {member.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-
-        {/* Member Selector */}
-        <div className="flex justify-center mb-8">
-          <div className="flex gap-2 bg-white rounded-2xl p-2 shadow-lg border border-slate-200">
-            {familyMembers.map((member) => (
-              <button
-                key={member.id}
-                onClick={() => {
-                  setSelectedMember(member.id)
-                  setItemsToShow(6)
-                }}
-                className={`flex items-center gap-3 px-6 py-3 rounded-xl transition-all duration-200 ${
-                  selectedMember === member.id
-                    ? "bg-gradient-to-r " + member.color + " text-white shadow-md"
-                    : "text-slate-600 hover:bg-slate-50"
-                }`}
-              >
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold ${
-                    selectedMember === member.id
-                      ? "bg-white/20 text-white"
-                      : "bg-gradient-to-r " + member.color + " text-white"
-                  }`}
-                >
-                  {member.initial}
-                </div>
-                <span className="font-medium">{member.name}</span>
-                <Badge variant="secondary" className="ml-1">
-                  {wishlist.filter((item) => item.addedBy === member.id).length}
-                </Badge>
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Add Item Button */}
-        {selectedMember === currentUser && (
-          <div className="flex justify-center mb-8">
-            <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
-              <DialogTrigger asChild>
-                <Button
-                  size="lg"
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
-                >
-                  <Plus className="w-6 h-6 mr-2" />
-                  Add to My Wishlist
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-lg rounded-2xl">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-slate-800">Add New Wishlist Item</DialogTitle>
-                  <DialogDescription className="text-slate-600">
-                    Add something special you'd love to receive
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-6 py-6">
-                  <div className="grid gap-3">
-                    <Label htmlFor="title" className="text-slate-700 font-medium">
-                      Item Title
-                    </Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Wireless Headphones"
-                      value={newItem.title}
-                      onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                      className="border-slate-300 rounded-xl"
-                    />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="category" className="text-slate-700 font-medium">
-                      Category
-                    </Label>
-                    <Select
-                      value={newItem.category}
-                      onValueChange={(value) => setNewItem({ ...newItem, category: value })}
-                    >
-                      <SelectTrigger className="border-slate-300 rounded-xl">
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="description" className="text-slate-700 font-medium">
-                      Description
-                    </Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Tell us why you want this..."
-                      value={newItem.description}
-                      onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
-                      className="border-slate-300 rounded-xl resize-none"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="price" className="text-slate-700 font-medium">
-                      Price
-                    </Label>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        value={newItem.price}
-                        onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
-                        className="pl-10 border-slate-300 rounded-xl"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="link" className="text-slate-700 font-medium">
-                      Link
-                    </Label>
-                    <Input
-                      id="link"
-                      type="url"
-                      placeholder="https://..."
-                      value={newItem.link}
-                      onChange={(e) => setNewItem({ ...newItem, link: e.target.value })}
-                      className="border-slate-300 rounded-xl"
-                    />
-                  </div>
+        <div className="flex justify-center mb-8">
+          <Dialog open={isAddingItem} onOpenChange={setIsAddingItem}>
+            <DialogTrigger asChild>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 text-lg"
+              >
+                <Plus className="w-6 h-6 mr-2" />
+                Add to My Wishlist
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg rounded-2xl">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-slate-800">Add New Wishlist Item</DialogTitle>
+                <DialogDescription className="text-slate-600">
+                  Add something special you'd love to receive
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-6 py-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="title" className="text-slate-700 font-medium">
+                    Item Title
+                  </Label>
+                  <Input
+                    id="title"
+                    placeholder="e.g., Wireless Headphones"
+                    value={newItem.title}
+                    onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                    className="border-slate-300 rounded-xl"
+                  />
                 </div>
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => setIsAddingItem(false)} className="rounded-xl">
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleAddItem}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl"
+                <div className="grid gap-3">
+                  <Label htmlFor="category" className="text-slate-700 font-medium">
+                    Category
+                  </Label>
+                  <Select
+                    value={newItem.category}
+                    onValueChange={(value) => setNewItem({ ...newItem, category: value })}
                   >
-                    Add Item
-                  </Button>
+                    <SelectTrigger className="border-slate-300 rounded-xl">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        )}
+                <div className="grid gap-3">
+                  <Label htmlFor="description" className="text-slate-700 font-medium">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Tell us why you want this..."
+                    value={newItem.description}
+                    onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
+                    className="border-slate-300 rounded-xl resize-none"
+                    rows={3}
+                  />
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="price" className="text-slate-700 font-medium">
+                    Price
+                  </Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={newItem.price}
+                      onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
+                      className="pl-10 border-slate-300 rounded-xl"
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="link" className="text-slate-700 font-medium">
+                    Link
+                  </Label>
+                  <Input
+                    id="link"
+                    type="url"
+                    placeholder="https://..."
+                    value={newItem.link}
+                    onChange={(e) => setNewItem({ ...newItem, link: e.target.value })}
+                    className="border-slate-300 rounded-xl"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" onClick={() => setIsAddingItem(false)} className="rounded-xl">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddItem}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl"
+                >
+                  Add Item
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {/* Filters and Search */}
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-200 mb-8">
@@ -534,7 +367,7 @@ function FamilyWishlist() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
               <Input
-                placeholder="Search wishlist items..."
+                placeholder="Search your wishlist items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 border-slate-300 rounded-xl"
@@ -620,8 +453,7 @@ function FamilyWishlist() {
           {/* Results Summary */}
           <div className="mt-4 pt-4 border-t border-slate-200">
             <p className="text-sm text-slate-600">
-              Showing {displayedItems.length} of {filteredAndSortedItems.length} items for{" "}
-              <span className="font-semibold">{selectedMemberInfo.name}</span>
+              Showing {displayedItems.length} of {filteredAndSortedItems.length} items in your wishlist
             </p>
           </div>
         </div>
@@ -629,13 +461,11 @@ function FamilyWishlist() {
         {/* Wishlist Items */}
         <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-200">
           <div className="flex items-center gap-4 mb-8">
-            <div
-              className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${selectedMemberInfo.color} flex items-center justify-center shadow-lg`}
-            >
-              <span className="text-2xl font-bold text-white">{selectedMemberInfo.initial}</span>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
+              <span className="text-2xl font-bold text-white">{user?.name?.charAt(0).toUpperCase()}</span>
             </div>
             <div>
-              <h2 className="text-3xl font-bold text-slate-800">{selectedMemberInfo.name}'s Wishlist</h2>
+              <h2 className="text-3xl font-bold text-slate-800">{user?.name}'s Wishlist</h2>
               <p className="text-slate-600">
                 {filteredAndSortedItems.length} {filteredAndSortedItems.length === 1 ? "item" : "items"}
               </p>
@@ -647,10 +477,14 @@ function FamilyWishlist() {
               <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-r from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
                 <Heart className="w-12 h-12 text-slate-400" />
               </div>
-              <h3 className="text-xl font-semibold text-slate-600 mb-2">No items found</h3>
-              <p className="text-slate-500">Try adjusting your filters or search terms</p>
-              <Button variant="outline" onClick={resetFilters} className="mt-4 rounded-xl">
-                Reset Filters
+              <h3 className="text-xl font-semibold text-slate-600 mb-2">No items in your wishlist yet</h3>
+              <p className="text-slate-500 mb-4">Start adding items you'd love to receive as gifts!</p>
+              <Button 
+                onClick={() => setIsAddingItem(true)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Your First Item
               </Button>
             </div>
           ) : (
@@ -698,32 +532,6 @@ function FamilyWishlist() {
                           </a>
                         </Button>
                       </div>
-
-                      {item.addedBy !== currentUser && (
-                        <div className="space-y-3">
-                          {item.status === "available" && (
-                            <Button
-                              size="sm"
-                              className="w-full bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white rounded-xl shadow-md hover:shadow-lg transition-all duration-200"
-                              onClick={() => handleClaimItem(item.id)}
-                            >
-                              <Gift className="w-4 h-4 mr-2" />
-                              I'll Get This! 🎁
-                            </Button>
-                          )}
-                          {item.status === "claimed" && item.claimedBy === currentUser && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="w-full rounded-xl border-amber-300 text-amber-700 hover:bg-amber-50"
-                              onClick={() => handleUnclaimItem(item.id)}
-                            >
-                              <ShoppingBag className="w-4 h-4 mr-2" />
-                              Unclaim Item
-                            </Button>
-                          )}
-                        </div>
-                      )}
 
                       <div className="text-sm text-slate-500 mt-4 pt-4 border-t border-slate-100">
                         Added{" "}
