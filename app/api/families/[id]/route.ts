@@ -10,7 +10,8 @@ export const GET = withMiddleware(async (request: NextRequest, { user, params })
     throw new Error('Authentication and family ID required')
   }
 
-  const familyId = params.id
+  const resolvedParams = await params
+  const familyId = resolvedParams.id
   const query = getValidatedQuery(request, familyQuerySchema)
   
   // Check if user is a member of this family
@@ -54,7 +55,8 @@ export const PUT = withMiddleware(async (request: NextRequest, { user, params })
     throw new Error('Authentication and family ID required')
   }
 
-  const familyId = params.id
+  const resolvedParams = await params
+  const familyId = resolvedParams.id
   const body = await getValidatedBody(request, updateFamilySchema)
   
   const updatedFamily = await updateFamily(familyId, user.id, body)
@@ -79,7 +81,8 @@ export const DELETE = withMiddleware(async (request: NextRequest, { user, params
     throw new Error('Authentication and family ID required')
   }
 
-  const familyId = params.id
+  const resolvedParams = await params
+  const familyId = resolvedParams.id
   
   await deleteFamily(familyId, user.id)
   

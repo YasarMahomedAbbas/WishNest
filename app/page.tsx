@@ -207,15 +207,6 @@ function FamilyWishlist() {
           </div>
           
           <div className="flex items-center gap-4">
-            <Button 
-              variant="outline" 
-              onClick={() => window.location.href = '/families'}
-              className="border-blue-200 text-blue-700 hover:bg-blue-50"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Manage Families
-            </Button>
-            
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
@@ -237,6 +228,10 @@ function FamilyWishlist() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => window.location.href = '/families'} className="cursor-pointer">
+                <Users className="mr-2 h-4 w-4" />
+                <span>Manage Family</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>

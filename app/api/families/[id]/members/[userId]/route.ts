@@ -8,8 +8,9 @@ export const DELETE = withMiddleware(async (request: NextRequest, { user, params
     throw new Error('Authentication, family ID, and user ID required')
   }
 
-  const familyId = params.id
-  const targetUserId = params.userId
+  const resolvedParams = await params
+  const familyId = resolvedParams.id
+  const targetUserId = resolvedParams.userId
   
   await removeFamilyMember(familyId, user.id, targetUserId)
   

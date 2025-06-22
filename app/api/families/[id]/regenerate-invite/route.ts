@@ -10,7 +10,8 @@ export const POST = withMiddleware(async (request: NextRequest, { user, params }
     throw new Error('Authentication and family ID required')
   }
 
-  const familyId = params.id
+  const resolvedParams = await params
+  const familyId = resolvedParams.id
   
   // Check if user is admin of this family
   await familyAuthMiddleware(user.id, familyId, 'ADMIN')

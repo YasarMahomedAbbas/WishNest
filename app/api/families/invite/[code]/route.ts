@@ -10,7 +10,8 @@ export const GET = withMiddleware(async (request: NextRequest, { user, params })
     throw createValidationError('Invite code is required')
   }
 
-  const inviteCode = params.code
+  const resolvedParams = await params
+  const inviteCode = resolvedParams.code
   
   // Validate invite code and get family ID
   const { valid, familyId } = await validateInviteCode(inviteCode)
