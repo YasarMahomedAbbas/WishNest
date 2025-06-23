@@ -66,7 +66,7 @@ export function WishlistFilters({
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="available">Available</SelectItem>
-              <SelectItem value="claimed">Claimed</SelectItem>
+              <SelectItem value="reserved">Reserved</SelectItem>
               <SelectItem value="purchased">Purchased</SelectItem>
             </SelectContent>
           </Select>

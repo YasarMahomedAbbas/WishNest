@@ -38,11 +38,11 @@ function FamilyWishlist() {
         const familiesResponse = await fetch('/api/families/me')
         if (familiesResponse.ok) {
           const familiesData = await familiesResponse.json()
-          setFamilies(familiesData.families || [])
+          setFamilies(familiesData.data.families || [])
           
           // Auto-select first family if available
-          if (familiesData.families && familiesData.families.length > 0) {
-            setSelectedFamily(familiesData.families[0].id)
+          if (familiesData.data.families && familiesData.data.families.length > 0) {
+            setSelectedFamily(familiesData.data.families[0].id)
           }
         }
       } catch (error) {
@@ -69,9 +69,10 @@ function FamilyWishlist() {
       
       try {
         // Load categories for the selected family
+        
         const [categoriesResponse, wishlistResponse] = await Promise.all([
           fetch(`/api/families/${selectedFamily}?includeCategories=true`),
-          fetch(`/api/wishlist-items/user/${user?.id}?page=1&limit=50`)
+          fetch(`/api/wishlist-items/user/${user?.id}?page=1&limit=50&includeReservations=true`)
         ])
         
         if (categoriesResponse.ok) {
@@ -81,7 +82,7 @@ function FamilyWishlist() {
         
         if (wishlistResponse.ok) {
           const wishlistData = await wishlistResponse.json()
-          setWishlist(wishlistData.items || [])
+          setWishlist(wishlistData.data.items || [])
         }
       } catch (error) {
         console.error('Failed to load family data:', error)
@@ -97,7 +98,7 @@ function FamilyWishlist() {
   }, [selectedFamily, user?.id, toast])
 
   const filteredAndSortedItems = useMemo(() => {
-    let items = wishlist.filter((item) => item.userId === user?.id)
+    let items = [...wishlist]
 
     // Search filter
     if (searchQuery) {

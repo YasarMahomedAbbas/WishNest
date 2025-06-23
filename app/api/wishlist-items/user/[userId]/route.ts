@@ -3,6 +3,7 @@ import { withMiddleware, getValidatedQuery } from '@/lib/api-middleware'
 import { createSuccessResponse, createNotFoundError } from '@/lib/api-errors'
 import { wishlistQuerySchema } from '@/lib/validations'
 import { getUserWishlistItems } from '@/lib/wishlist-service'
+import { filterItemForUser } from '@/lib/wishlist-utils'
 
 export const GET = withMiddleware(async (request: NextRequest, { user, params }) => {
   if (!user) {
@@ -21,23 +22,27 @@ export const GET = withMiddleware(async (request: NextRequest, { user, params })
   const { items, totalCount } = await getUserWishlistItems(userId, user.id, query)
   
   return createSuccessResponse({
-    items: items.map(item => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      price: item.price ? Number(item.price) : null,
-      productUrl: item.productUrl,
-      imageUrl: item.imageUrl,
-      priority: item.priority,
-      notes: item.notes,
-      userId: item.userId,
-      categoryId: item.categoryId,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      user: item.user,
-      category: item.category,
-      ...(query.includeReservations && { reservations: item.reservations })
-    })),
+    items: items.map(item => {
+      const filteredItem = filterItemForUser(item, user.id)
+      return {
+        id: filteredItem.id,
+        title: filteredItem.title,
+        description: filteredItem.description,
+        price: filteredItem.price ? Number(filteredItem.price) : null,
+        productUrl: filteredItem.productUrl,
+        imageUrl: filteredItem.imageUrl,
+        priority: filteredItem.priority,
+        notes: filteredItem.notes,
+        userId: filteredItem.userId,
+        categoryId: filteredItem.categoryId,
+        createdAt: filteredItem.createdAt,
+        updatedAt: filteredItem.updatedAt,
+        user: filteredItem.user,
+        category: filteredItem.category,
+        status: filteredItem.status,
+        ...(query.includeReservations && { reservations: filteredItem.reservations })
+      }
+    }),
     pagination: {
       page: query.page || 1,
       limit: query.limit || 10,

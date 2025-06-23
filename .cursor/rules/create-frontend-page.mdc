@@ -56,15 +56,31 @@ function PageName() {
 export default withAuth(PageName) // Use for protected pages
 ```
 
-## REQUIRED Styles (Custom Classes Available)
-- **Page Background**: `app-page` (replaces long gradient classes)
-- **Container**: `app-container` (replaces max-w-7xl mx-auto px-4 py-8)
-- **Brand Buttons**: `btn-brand` (includes hover states and transitions)
-- **Brand Text**: `text-brand` (includes gradient and bold styling)
-- **Cards**: `card-default` (standard card styling)
-- **Icon Containers**: `icon-brand` + `<Icon className="w-8 h-8 text-white" />`
-- **Loading Spinner**: `loading-spinner`
-- **Loading Page**: `loading-page`
+## REQUIRED API Response Pattern
+**CRITICAL**: All API responses are wrapped in this structure:
+```json
+{
+  "success": true,
+  "data": {
+    // actual data here
+  },
+  "timestamp": "2025-06-23T16:20:21.085Z"
+}
+```
+
+**Always access data using `.data` property:**
+```tsx
+const response = await fetch('/api/endpoint')
+const result = await response.json()
+
+// ✅ CORRECT - Access via .data
+const items = result.data.items
+const families = result.data.families
+const user = result.data.user
+
+// ❌ WRONG - Direct access will fail
+const items = result.items // undefined!
+```
 
 ## REQUIRED State Pattern
 ```tsx
@@ -75,14 +91,16 @@ const fetchData = async () => {
   setLoading(true)
   try {
     const response = await fetch('/api/endpoint')
-    const data = await response.json()
+    const result = await response.json()
     
-    if (data.success) {
-      // handle success
+    if (result.success) {
+      // ✅ ALWAYS use .data to access actual content
+      const actualData = result.data
+      setData(actualData.items || actualData.families || actualData)
     } else {
       toast({
         title: 'Error',
-        description: data.error?.message || 'Operation failed',
+        description: result.error?.message || 'Operation failed',
         variant: 'destructive'
       })
     }
@@ -93,6 +111,38 @@ const fetchData = async () => {
   }
 }
 ```
+
+## REQUIRED API Error Handling
+```tsx
+if (response.ok) {
+  const result = await response.json()
+  console.log('API Response:', result)
+  console.log('Actual Data:', result.data)
+  
+  // Use result.data to access the actual content
+  setData(result.data.items || result.data.families || result.data)
+} else {
+  console.error('API Error:', response.status, response.statusText)
+  const errorText = await response.text()
+  console.error('Error details:', errorText)
+  
+  toast({
+    title: 'Error',
+    description: `API request failed: ${response.status}`,
+    variant: 'destructive'
+  })
+}
+```
+
+## REQUIRED Styles (Custom Classes Available)
+- **Page Background**: `app-page` (replaces long gradient classes)
+- **Container**: `app-container` (replaces max-w-7xl mx-auto px-4 py-8)
+- **Brand Buttons**: `btn-brand` (includes hover states and transitions)
+- **Brand Text**: `text-brand` (includes gradient and bold styling)
+- **Cards**: `card-default` (standard card styling)
+- **Icon Containers**: `icon-brand` + `<Icon className="w-8 h-8 text-white" />`
+- **Loading Spinner**: `loading-spinner`
+- **Loading Page**: `loading-page`
 
 ## REQUIRED Loading State
 ```tsx
@@ -120,10 +170,15 @@ if (loading) {
 - Use `useToast()` for all user feedback
 - Use TypeScript interfaces for data
 - Export protected pages with `withAuth(Component)`
+- **ALWAYS access API data via `.data` property**
+- Add console.log for API responses during development
 
 ## DON'T
 - Create pages without the required background/container structure
 - Use colors other than the purple/pink gradient brand colors
 - Skip loading states
 - Skip error handling with toast notifications
-- Use inline styles instead of Tailwind classes 
+- Use inline styles instead of Tailwind classes
+- **NEVER access API response data directly without `.data`**
+
+- Forget to handle both success and error cases in API calls 
