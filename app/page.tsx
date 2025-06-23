@@ -77,7 +77,7 @@ function FamilyWishlist() {
         
         if (categoriesResponse.ok) {
           const familyData = await categoriesResponse.json()
-          setCategories(familyData.family?.categories || [])
+          setCategories(familyData.data.family?.categories || [])
         }
         
         if (wishlistResponse.ok) {

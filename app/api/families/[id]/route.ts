@@ -23,6 +23,16 @@ export const GET = withMiddleware(async (request: NextRequest, { user, params })
     throw createNotFoundError('Family not found')
   }
   
+  // Load categories if requested
+  let categories = []
+  if (query.includeCategories) {
+    const { db } = await import('@/lib/db')
+    categories = await db.category.findMany({
+      where: { familyId },
+      orderBy: { name: 'asc' }
+    })
+  }
+  
   return createSuccessResponse({
     family: {
       id: family.id,
@@ -42,7 +52,8 @@ export const GET = withMiddleware(async (request: NextRequest, { user, params })
           name: member.user.name,
           email: member.user.email
         }
-      }))
+      })),
+      ...(query.includeCategories && { categories })
     }
   })
 }, {
