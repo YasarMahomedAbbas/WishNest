@@ -1,0 +1,189 @@
+---
+description: Creating an api endpoint
+globs: 
+alwaysApply: false
+---
+# Family Wish List API Development Rules
+
+## Core Architecture Patterns
+
+### 1. Route Structure & Organization
+- Use Next.js App Router with `app/api/` directory structure
+- Organize routes by resource: `/api/resource/[id]/action/route.ts`
+- Use REST conventions: GET, POST, PUT, DELETE methods
+- Export HTTP methods as named exports: `export const GET = ...`
+- Use dynamic segments with brackets: `[id]`, `[code]`
+
+### 2. Middleware Integration
+- ALWAYS use `withMiddleware` wrapper for all routes
+- Configure middleware options based on route requirements:
+  ```typescript
+  export const GET = withMiddleware(async (request, { user, params }) => {
+    // Route logic here
+  }, {
+    requireAuth: true,           // Set to false for public routes
+    allowedMethods: ['GET'],     // List all supported methods
+    skipRateLimit: false         // Set to true for high-frequency endpoints
+  })
+  ```
+
+### 3. Authentication & Authorization
+- Use `requireAuth: true` for protected routes
+- Access authenticated user via `{ user }` in handler context
+- For family-specific routes, use `familyAuthMiddleware(user.id, familyId, requiredRole?)`
+- Required roles: 'ADMIN' for administrative actions, undefined for member access
+- Handle authentication errors gracefully with `createAuthenticationError()`
+
+### 4. Input Validation
+- ALWAYS validate request bodies using Zod schemas from `@/lib/validations`
+- Use `getValidatedBody(request, schema)` for POST/PUT requests
+- Use `getValidatedQuery(request, schema)` for query parameters
+- Create new validation schemas in `lib/validations.ts` following existing patterns
+- Include type exports: `export type NewType = z.infer<typeof newSchema>`
+
+### 5. Error Handling
+- Import error creators from `@/lib/api-errors`
+- Use specific error types:
+  - `createValidationError(message, details?)` for input validation
+  - `createAuthenticationError(message?)` for auth failures
+  - `createAuthorizationError(message?)` for permission issues
+  - `createNotFoundError(resource?)` for missing resources
+  - `createConflictError(message)` for duplicate/conflict issues
+- Let middleware handle error responses automatically
+- Log errors appropriately: `console.error('Operation error:', error)`
+
+### 6. Response Formatting
+- Use `createSuccessResponse(data, status?)` for success responses
+- Return data in consistent format with success flag and timestamp
+- For CREATE operations, use status 201
+- For DELETE operations, return confirmation message
+- Structure response data to match client expectations
+
+### 7. Database Operations
+- Use service layer functions from `@/lib/*-service.ts` files
+- Import `db` from `@/lib/db` for direct Prisma operations
+- Wrap complex operations in transactions using `db.$transaction`
+- Select only necessary fields to optimize performance
+- Use proper error handling for database operations
+
+### 8. Parameter Handling
+- Access dynamic route parameters via `params` in handler context
+- ALWAYS await params: `const resolvedParams = await params`
+- Validate parameter format and existence before use
+- Use `idSchema` from validations for ID parameters
+
+## Template Structure
+
+```typescript
+import { NextRequest } from 'next/server'
+import { withMiddleware, getValidatedBody } from '@/lib/api-middleware'
+import { createSuccessResponse, createNotFoundError } from '@/lib/api-errors'
+import { resourceSchema } from '@/lib/validations'
+import { resourceService } from '@/lib/resource-service'
+
+export const GET = withMiddleware(async (request, { user, params }) => {
+  // 1. Parameter validation
+  const resolvedParams = await params
+  const resourceId = resolvedParams?.id
+  
+  // 2. Authorization checks
+  if (!user || !resourceId) {
+    throw new Error('Authentication and resource ID required')
+  }
+  
+  // 3. Additional authorization if needed
+  // await familyAuthMiddleware(user.id, familyId, 'ADMIN')
+  
+  // 4. Business logic via service layer
+  const resource = await resourceService.getById(resourceId)
+  
+  if (!resource) {
+    throw createNotFoundError('Resource')
+  }
+  
+  // 5. Return formatted response
+  return createSuccessResponse({
+    resource: {
+      // Map to response format
+      id: resource.id,
+      // ... other fields
+    }
+  })
+}, {
+  requireAuth: true,
+  allowedMethods: ['GET']
+})
+
+export const POST = withMiddleware(async (request, { user }) => {
+  // 1. Authentication check
+  if (!user) {
+    throw new Error('Authentication required')
+  }
+  
+  // 2. Input validation
+  const body = await getValidatedBody(request, resourceSchema)
+  
+  // 3. Business logic
+  const resource = await resourceService.create({
+    ...body,
+    userId: user.id
+  })
+  
+  // 4. Return created resource
+  return createSuccessResponse({
+    resource: {
+      id: resource.id,
+      // ... mapped fields
+    }
+  }, 201)
+}, {
+  requireAuth: true,
+  allowedMethods: ['POST']
+})
+```
+
+## Route-Specific Patterns
+
+### Public Routes (Auth endpoints)
+- Set `requireAuth: false`
+- Handle token creation and cookie setting for auth routes
+- Use `validateRequest` directly if not using middleware wrapper
+
+### Family-Scoped Routes
+- Use `familyAuthMiddleware` to check membership
+- Pass required role ('ADMIN') for administrative actions
+- Access family data through membership relationship
+
+### Paginated Routes
+- Use `paginationSchema` for query parameters
+- Return data with pagination metadata
+- Default to reasonable limits (10 items per page)
+
+### File Upload Routes
+- Handle multipart form data appropriately
+- Validate file types and sizes
+- Store file references in database
+
+## Security Best Practices
+- Never expose sensitive data (passwords, tokens) in responses
+- Use proper HTTP status codes
+- Implement rate limiting via middleware
+- Validate all inputs thoroughly
+- Log security-relevant events
+- Use HTTPS in production
+- Implement proper CORS headers via middleware
+
+## Performance Considerations
+- Select only required database fields
+- Use database indexes for frequently queried fields
+- Implement caching where appropriate
+- Use transactions for multi-step operations
+- Avoid N+1 queries with proper includes
+- Return paginated results for large datasets
+
+## Testing & Development
+- Include error scenarios in development testing
+- Use type-safe response schemas where possible
+- Document complex business logic in comments
+- Handle edge cases (empty results, invalid IDs, etc.)
+- Test authentication and authorization paths 
