@@ -1,0 +1,129 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Frontend Page Rule
+
+When creating React/Next.js pages, follow these patterns from existing codebase:
+
+## REQUIRED Structure (Option 1: Component)
+```tsx
+"use client"
+import { useState } from 'react'
+import { useAuth, withAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+import { PageLayout, LoadingPage } from '@/components/PageLayout'
+
+function PageName() {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(true)
+  
+  if (loading) return <LoadingPage />
+  
+  return (
+    <PageLayout>
+      {/* content */}
+    </PageLayout>
+  )
+}
+
+export default withAuth(PageName) // Use for protected pages
+```
+
+## REQUIRED Structure (Option 2: Custom Classes)
+```tsx
+"use client"
+import { useState } from 'react'
+import { useAuth, withAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+
+function PageName() {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(true)
+  
+  return (
+    <div className="app-page">
+      <div className="app-container">
+        {/* content */}
+      </div>
+    </div>
+  )
+}
+
+export default withAuth(PageName) // Use for protected pages
+```
+
+## REQUIRED Styles (Custom Classes Available)
+- **Page Background**: `app-page` (replaces long gradient classes)
+- **Container**: `app-container` (replaces max-w-7xl mx-auto px-4 py-8)
+- **Brand Buttons**: `btn-brand` (includes hover states and transitions)
+- **Brand Text**: `text-brand` (includes gradient and bold styling)
+- **Cards**: `card-default` (standard card styling)
+- **Icon Containers**: `icon-brand` + `<Icon className="w-8 h-8 text-white" />`
+- **Loading Spinner**: `loading-spinner`
+- **Loading Page**: `loading-page`
+
+## REQUIRED State Pattern
+```tsx
+const [loading, setLoading] = useState(true)
+const [error, setError] = useState<string | null>(null)
+
+const fetchData = async () => {
+  setLoading(true)
+  try {
+    const response = await fetch('/api/endpoint')
+    const data = await response.json()
+    
+    if (data.success) {
+      // handle success
+    } else {
+      toast({
+        title: 'Error',
+        description: data.error?.message || 'Operation failed',
+        variant: 'destructive'
+      })
+    }
+  } catch (error) {
+    toast({ title: 'Error', description: 'Network error', variant: 'destructive' })
+  } finally {
+    setLoading(false)
+  }
+}
+```
+
+## REQUIRED Loading State
+```tsx
+// Option 1: Use LoadingPage component
+if (loading) return <LoadingPage message="Loading data..." />
+
+// Option 2: Use custom classes
+if (loading) {
+  return (
+    <div className="loading-page">
+      <div className="text-center">
+        <div className="loading-spinner mx-auto mb-4"></div>
+        <p>Loading...</p>
+      </div>
+    </div>
+  )
+}
+```
+
+## DO
+- Use shadcn/ui components
+- Use Lucide React icons
+- Import: `import { Icon } from 'lucide-react'`
+- Add `"use client"` to interactive pages
+- Use `useToast()` for all user feedback
+- Use TypeScript interfaces for data
+- Export protected pages with `withAuth(Component)`
+
+## DON'T
+- Create pages without the required background/container structure
+- Use colors other than the purple/pink gradient brand colors
+- Skip loading states
+- Skip error handling with toast notifications
+- Use inline styles instead of Tailwind classes 

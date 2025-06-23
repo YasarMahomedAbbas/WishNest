@@ -115,15 +115,15 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-4">
+    <div className="app-page flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg">
+            <div className="icon-brand shadow-lg">
               <Sparkles className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl text-brand">
               WishNest
             </h1>
           </div>
@@ -221,7 +221,7 @@ export default function AuthPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                    className="w-full btn-brand text-white h-12 shadow-lg hover:shadow-xl font-medium"
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">
@@ -340,7 +340,7 @@ export default function AuthPage() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 font-medium"
+                    className="w-full btn-brand text-white h-12 shadow-lg hover:shadow-xl font-medium"
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">

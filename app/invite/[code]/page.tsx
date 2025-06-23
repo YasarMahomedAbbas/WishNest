@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth } from '@/contexts/AuthContext'
+import { LoadingPage } from '@/components/PageLayout'
 
 interface FamilyPreview {
   id: string
@@ -110,25 +111,18 @@ function InvitePage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p>Loading family information...</p>
-        </div>
-      </div>
-    )
+    return <LoadingPage message="Loading family information..." />
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+      <div className="loading-page">
         <Card className="max-w-md w-full mx-4 rounded-2xl shadow-lg border border-slate-200">
           <CardContent className="text-center py-8">
             <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-slate-900 mb-2">Invalid Invite</h2>
             <p className="text-slate-600 mb-6">{error}</p>
-            <Button onClick={() => router.push('/')} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl">
+            <Button onClick={() => router.push('/')} className="btn-brand">
               <Home className="h-4 w-4 mr-2" />
               Go Home
             </Button>
@@ -143,13 +137,13 @@ function InvitePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
+    <div className="loading-page">
       <Card className="max-w-lg w-full mx-4 rounded-2xl shadow-lg border border-slate-200">
         <CardHeader className="text-center">
-          <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-fit mx-auto mb-4">
+          <div className="icon-brand rounded-full w-fit mx-auto mb-4">
             <Users className="h-8 w-8 text-white" />
           </div>
-          <CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">You're Invited!</CardTitle>
+          <CardTitle className="text-2xl text-brand">You're Invited!</CardTitle>
           <CardDescription className="text-slate-600">
             Join the family group to share wishlists and coordinate gifts
           </CardDescription>
