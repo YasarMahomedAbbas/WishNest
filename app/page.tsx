@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth, withAuth } from "@/contexts/AuthContext"
+import { PageLayout, LoadingPage } from "@/components/PageLayout"
 
 interface WishlistItem {
   id: string
@@ -193,15 +194,14 @@ function FamilyWishlist() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <PageLayout>
         {/* Authentication Header */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
+            <div className="icon-brand">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h2 className="text-2xl text-brand">
               WishNest
             </h2>
           </div>
@@ -247,7 +247,7 @@ function FamilyWishlist() {
             <div className="p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl">
               <Gift className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-5xl text-brand">
               My Wishlist
             </h1>
           </div>
@@ -488,7 +488,7 @@ function FamilyWishlist() {
               <p className="text-slate-500 mb-4">Start adding items you'd love to receive as gifts!</p>
               <Button 
                 onClick={() => setIsAddingItem(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl"
+                className="btn-brand"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Your First Item
@@ -569,8 +569,7 @@ function FamilyWishlist() {
             </>
           )}
         </div>
-      </div>
-    </div>
+    </PageLayout>
   )
 }
 

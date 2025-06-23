@@ -91,6 +91,37 @@ const config: Config = {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    function({ addUtilities }: any) {
+      const newUtilities = {
+        '.app-page': {
+          '@apply min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100': {},
+        },
+        '.app-container': {
+          '@apply max-w-7xl mx-auto px-4 py-8': {},
+        },
+        '.btn-brand': {
+          '@apply bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 rounded-xl transition-all duration-200': {},
+        },
+        '.text-brand': {
+          '@apply bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent font-bold': {},
+        },
+        '.card-default': {
+          '@apply rounded-2xl shadow-lg border border-slate-200': {},
+        },
+        '.icon-brand': {
+          '@apply p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl': {},
+        },
+        '.loading-spinner': {
+          '@apply animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500': {},
+        },
+        '.loading-page': {
+          '@apply min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center': {},
+        }
+      }
+      addUtilities(newUtilities)
+    }
+  ],
 };
 export default config;

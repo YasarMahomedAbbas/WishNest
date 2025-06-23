@@ -44,6 +44,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { useAuth, withAuth } from '@/contexts/AuthContext'
+import { PageLayout, LoadingPage } from '@/components/PageLayout'
 
 interface Family {
   id: string
@@ -450,15 +451,11 @@ function FamiliesPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center">
-        <div className="text-center">Loading families...</div>
-      </div>
-    )
+    return <LoadingPage message="Loading families..." />
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+    <div className="app-page">
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
@@ -472,11 +469,11 @@ function FamiliesPage() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Wishlist
             </Button>
-            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl">
+            <div className="icon-brand">
               <Users className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">My Family</h1>
+              <h1 className="text-2xl text-brand">My Family</h1>
               <p className="text-sm text-slate-600">Manage your family group and invite members</p>
             </div>
           </div>
@@ -484,7 +481,7 @@ function FamiliesPage() {
           {!family && (
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-200">
+                <Button className="btn-brand text-white shadow-lg hover:shadow-xl">
                   <Plus className="h-4 w-4 mr-2" />
                   Create My Family
                 </Button>
