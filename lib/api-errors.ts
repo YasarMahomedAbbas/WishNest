@@ -190,4 +190,8 @@ export function errorResponse(error: unknown, status?: number, path?: string) {
 
 export function successResponse<T>(data: T, status: number = 200) {
   return NextResponse.json(formatSuccessResponse(data), { status })
+}
+
+export function createSuccessResponse<T>(data: T, status: number = 200) {
+  return NextResponse.json(formatSuccessResponse(data), { status })
 } 

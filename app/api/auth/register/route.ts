@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { db } from '@/lib/db'
-import { hashPassword, createTokens, setAuthCookies } from '@/lib/auth'
+import { createTokens, setAuthCookies } from '@/lib/auth'
 import { withMiddleware, validateRequest } from '@/lib/api-middleware'
-import { createConflictError } from '@/lib/api-errors'
+import { createUser } from '@/lib/user-service'
 
 // Request validation schema
 const registerSchema = z.object({
@@ -26,30 +25,12 @@ async function registerHandler(request: NextRequest) {
 
     const { email, password, name } = validatedData
 
-    // Check if user already exists
-    const existingUser = await db.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
-      throw createConflictError('User with this email already exists')
-    }
-
-    // Hash password
-    const hashedPassword = await hashPassword(password)
-
-    // Create user
-    const user = await db.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true
-      }
+    // Create user using shared utility
+    const user = await createUser({
+      email,
+      password,
+      name,
+      skipEmailValidation: false // Use strict validation for registration
     })
 
     // Create tokens for immediate login after registration
