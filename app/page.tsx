@@ -171,39 +171,41 @@ function FamilyWishlist() {
     <PageLayout>
       <WishlistHeader user={user!} onLogout={logout} />
       
-      <WishlistPageHeader />
+      <div className="space-y-8">
+        <WishlistPageHeader />
 
-      <AddItemDialog 
-        categories={categories} 
-        onItemAdded={handleItemAdded}
-      />
+        <AddItemDialog 
+          categories={categories} 
+          onItemAdded={handleItemAdded}
+        />
 
-      <WishlistFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        categoryFilter={categoryFilter}
-        onCategoryFilterChange={setCategoryFilter}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        priceRange={priceRange}
-        onPriceRangeChange={setPriceRange}
-        categories={categories}
-        onResetFilters={resetFilters}
-        displayedCount={displayedItems.length}
-        totalCount={filteredAndSortedItems.length}
-      />
+        <WishlistFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          categoryFilter={categoryFilter}
+          onCategoryFilterChange={setCategoryFilter}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          priceRange={priceRange}
+          onPriceRangeChange={setPriceRange}
+          categories={categories}
+          onResetFilters={resetFilters}
+          displayedCount={displayedItems.length}
+          totalCount={filteredAndSortedItems.length}
+        />
 
-      <WishlistGrid
-        items={filteredAndSortedItems}
-        displayedItems={displayedItems}
-        user={user!}
-        hasMoreItems={hasMoreItems}
-        totalCount={filteredAndSortedItems.length}
-        onShowMore={() => setItemsToShow(itemsToShow + 6)}
-        onAddItem={() => {/* AddItemDialog has its own trigger button */}}
-      />
+        <WishlistGrid
+          items={filteredAndSortedItems}
+          displayedItems={displayedItems}
+          user={user!}
+          hasMoreItems={hasMoreItems}
+          totalCount={filteredAndSortedItems.length}
+          onShowMore={() => setItemsToShow(itemsToShow + 6)}
+          onAddItem={() => {/* AddItemDialog has its own trigger button */}}
+        />
+      </div>
     </PageLayout>
   )
 }
