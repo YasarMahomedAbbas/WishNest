@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
-import { WishlistItem } from "./types"
+import type { WishlistItem } from "./types"
 
 interface WishlistItemProps {
   item: WishlistItem
@@ -27,20 +27,7 @@ export function WishlistItem({ item }: WishlistItemProps) {
     }
   }
 
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "URGENT":
-        return <Badge variant="destructive">Urgent</Badge>
-      case "HIGH":
-        return <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200">High</Badge>
-      case "MEDIUM":
-        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">Medium</Badge>
-      case "LOW":
-        return <Badge variant="secondary">Low</Badge>
-      default:
-        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">Medium</Badge>
-    }
-  }
+
 
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-slate-200 rounded-2xl overflow-hidden">
@@ -55,7 +42,6 @@ export function WishlistItem({ item }: WishlistItemProps) {
           <Badge variant="outline" className="text-xs">
             {item.category.name}
           </Badge>
-          {getPriorityBadge(item.priority)}
         </div>
         {item.description && (
           <CardDescription className="text-slate-600 line-clamp-3 leading-relaxed">
