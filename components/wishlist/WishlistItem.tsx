@@ -22,18 +22,14 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
   const isOwnItem = item.userId === currentUser.id
   const isReservedByCurrentUser = item.reservationDetails?.reservedBy === currentUser.id
 
-  // Debug logging
-  console.log('WishlistItem Debug:', {
-    itemId: item.id,
-    title: item.title,
-    status: item.status,
-    isOwnItem,
-    currentUserId: currentUser.id,
-    itemUserId: item.userId,
-    reservationDetails: item.reservationDetails
-  })
+
 
   const getStatusBadge = (item: WishlistItem) => {
+    // Don't show status badge for user's own items to maintain surprise
+    if (isOwnItem) {
+      return null
+    }
+    
     switch (item.status) {
       case "available":
         return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Available</Badge>
