@@ -25,6 +25,9 @@ interface WishlistFiltersProps {
   onResetFilters: () => void
   displayedCount: number
   totalCount: number
+  // Props for display purposes only (tabs handle filtering now)
+  familyMembers: {id: string, name: string}[]
+  currentUserId: string
 }
 
 export function WishlistFilters({
@@ -41,7 +44,9 @@ export function WishlistFilters({
   categories,
   onResetFilters,
   displayedCount,
-  totalCount
+  totalCount,
+  familyMembers,
+  currentUserId
 }: WishlistFiltersProps) {
   return (
     <div className="card-default mb-8">
@@ -50,7 +55,7 @@ export function WishlistFilters({
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
-            placeholder="Search your wishlist items..."
+            placeholder="Search wishlist items..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10 border-slate-300 rounded-xl"
@@ -136,7 +141,7 @@ export function WishlistFilters({
       {/* Results Summary */}
       <div className="mt-4 pt-4 border-t border-slate-200">
         <p className="text-sm text-slate-600">
-          Showing {displayedCount} of {totalCount} items in your wishlist
+          Showing {displayedCount} of {totalCount} wishlist items
         </p>
       </div>
     </div>

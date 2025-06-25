@@ -3,6 +3,7 @@ import { withMiddleware, getValidatedQuery } from '@/lib/api-middleware'
 import { createSuccessResponse, createNotFoundError } from '@/lib/api-errors'
 import { wishlistQuerySchema } from '@/lib/validations'
 import { getFamilyWishlistItems } from '@/lib/wishlist-service'
+import { filterItemForUser } from '@/lib/wishlist-utils'
 
 export const GET = withMiddleware(async (request: NextRequest, { user, params }) => {
   if (!user) {
@@ -18,26 +19,34 @@ export const GET = withMiddleware(async (request: NextRequest, { user, params })
 
   const query = getValidatedQuery(request, wishlistQuerySchema)
   
-  const { items, totalCount } = await getFamilyWishlistItems(familyId, user.id, query)
+  const { items, totalCount } = await getFamilyWishlistItems(familyId, user.id, {
+    ...query,
+    includeReservations: true  // Always include reservations to calculate status
+  })
   
   return createSuccessResponse({
-    items: items.map(item => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      price: item.price ? Number(item.price) : null,
-      productUrl: item.productUrl,
-      imageUrl: item.imageUrl,
-      priority: item.priority,
-      notes: item.notes,
-      userId: item.userId,
-      categoryId: item.categoryId,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
-      user: item.user,
-      category: item.category,
-      ...(query.includeReservations && { reservations: item.reservations })
-    })),
+    items: items.map(item => {
+      const filteredItem = filterItemForUser(item, user.id)
+      return {
+        id: filteredItem.id,
+        title: filteredItem.title,
+        description: filteredItem.description,
+        price: filteredItem.price ? Number(filteredItem.price) : null,
+        productUrl: filteredItem.productUrl,
+        imageUrl: filteredItem.imageUrl,
+        priority: filteredItem.priority,
+        notes: filteredItem.notes,
+        userId: filteredItem.userId,
+        categoryId: filteredItem.categoryId,
+        createdAt: filteredItem.createdAt,
+        updatedAt: filteredItem.updatedAt,
+        user: filteredItem.user,
+        category: filteredItem.category,
+        status: filteredItem.status,
+        reservationDetails: filteredItem.reservationDetails,
+        ...(query.includeReservations && { reservations: filteredItem.reservations })
+      }
+    }),
     pagination: {
       page: query.page || 1,
       limit: query.limit || 10,

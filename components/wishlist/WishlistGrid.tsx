@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { WishlistItem as WishlistItemComponent } from "./WishlistItem"
 import { EmptyWishlist } from "./EmptyWishlist"
-import { WishlistItem, User } from "./types"
+import { WishlistItem, User, Category } from "./types"
 
 interface WishlistGridProps {
   items: WishlistItem[]
@@ -11,6 +11,11 @@ interface WishlistGridProps {
   totalCount: number
   onShowMore: () => void
   onAddItem: () => void
+  selectedUserId?: string
+  familyMembers: {id: string, name: string}[]
+  categories: Category[]
+  onItemAdded: (item: WishlistItem) => void
+  onItemUpdated?: (updatedItem: WishlistItem) => void
 }
 
 export function WishlistGrid({ 
@@ -20,29 +25,22 @@ export function WishlistGrid({
   hasMoreItems, 
   totalCount, 
   onShowMore, 
-  onAddItem 
+  onAddItem,
+  selectedUserId,
+  familyMembers,
+  categories,
+  onItemAdded,
+  onItemUpdated
 }: WishlistGridProps) {
   return (
     <div className="card-default">
-      <div className="flex items-center gap-4 mb-8">
-        <div className="icon-brand w-16 h-16">
-          <span className="text-2xl font-bold text-white">{user?.name?.charAt(0).toUpperCase()}</span>
-        </div>
-        <div>
-          <h2 className="text-3xl font-bold text-slate-800">{user?.name}'s Wishlist</h2>
-          <p className="text-slate-600">
-            {totalCount} {totalCount === 1 ? "item" : "items"}
-          </p>
-        </div>
-      </div>
-
       {items.length === 0 ? (
         <EmptyWishlist onAddItem={onAddItem} />
       ) : (
         <>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {displayedItems.map((item) => (
-              <WishlistItemComponent key={item.id} item={item} />
+              <WishlistItemComponent key={item.id} item={item} currentUser={user} onItemUpdated={onItemUpdated} />
             ))}
           </div>
 

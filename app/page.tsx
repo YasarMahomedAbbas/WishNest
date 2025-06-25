@@ -7,9 +7,9 @@ import { useToast } from "@/hooks/use-toast"
 import {
   WishlistHeader,
   WishlistPageHeader,
-  AddItemDialog,
   WishlistFilters,
-  WishlistGrid
+  WishlistGrid,
+  FamilyTabs
 } from "@/components/wishlist"
 import type { WishlistItem, Category, Family } from "@/components/wishlist/types"
 
@@ -20,6 +20,8 @@ function FamilyWishlist() {
   const [categories, setCategories] = useState<Category[]>([])
   const [families, setFamilies] = useState<Family[]>([])
   const [selectedFamily, setSelectedFamily] = useState<string>("") 
+  const [selectedUser, setSelectedUser] = useState<string>("all") // New: for filtering by user
+  const [familyMembers, setFamilyMembers] = useState<{id: string, name: string}[]>([]) // New: family members
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -68,11 +70,10 @@ function FamilyWishlist() {
       if (!selectedFamily) return
       
       try {
-        // Load categories for the selected family
-        
-        const [categoriesResponse, wishlistResponse] = await Promise.all([
+        // Load categories and family members for the selected family
+        const [categoriesResponse, familyMembersResponse] = await Promise.all([
           fetch(`/api/families/${selectedFamily}?includeCategories=true`),
-          fetch(`/api/wishlist-items/user/${user?.id}?page=1&limit=50&includeReservations=true`)
+          fetch(`/api/families/${selectedFamily}?includeMembers=true`)
         ])
         
         if (categoriesResponse.ok) {
@@ -80,12 +81,44 @@ function FamilyWishlist() {
           setCategories(familyData.data.family?.categories || [])
         }
         
+        if (familyMembersResponse.ok) {
+          const familyData = await familyMembersResponse.json()
+          const members = familyData.data.family?.members?.map((member: any) => ({
+            id: member.user.id,
+            name: member.user.name
+          })) || []
+          setFamilyMembers(members)
+        }
+      } catch (error) {
+        console.error('Failed to load family data:', error)
+        toast({
+          title: "Error",
+          description: "Failed to load family data. Please try again.",
+          variant: "destructive",
+        })
+      }
+    }
+
+    loadFamilyData()
+  }, [selectedFamily, toast])
+
+  // Load wishlist data when family or user filter changes
+  useEffect(() => {
+    const loadWishlistData = async () => {
+      if (!selectedFamily) return
+      
+      try {
+        // Load wishlist items for the selected family
+        const wishlistResponse = await fetch(
+          `/api/wishlists/${selectedFamily}?page=1&limit=100&includeReservations=true${selectedUser !== 'all' ? `&userId=${selectedUser}` : ''}`
+        )
+        
         if (wishlistResponse.ok) {
           const wishlistData = await wishlistResponse.json()
           setWishlist(wishlistData.data.items || [])
         }
       } catch (error) {
-        console.error('Failed to load family data:', error)
+        console.error('Failed to load wishlist data:', error)
         toast({
           title: "Error",
           description: "Failed to load wishlist data. Please try again.",
@@ -94,8 +127,8 @@ function FamilyWishlist() {
       }
     }
 
-    loadFamilyData()
-  }, [selectedFamily, user?.id, toast])
+    loadWishlistData()
+  }, [selectedFamily, selectedUser, toast])
 
   const filteredAndSortedItems = useMemo(() => {
     let items = [...wishlist]
@@ -154,6 +187,21 @@ function FamilyWishlist() {
     setWishlist(prev => [newItem, ...prev])
   }
 
+  const handleItemUpdated = (updatedItem: WishlistItem) => {
+    setWishlist(prev => prev.map(item => 
+      item.id === updatedItem.id ? updatedItem : item
+    ))
+  }
+
+  // Calculate item counts per user
+  const itemCounts = useMemo(() => {
+    const counts: { [userId: string]: number } = {}
+    wishlist.forEach(item => {
+      counts[item.user.id] = (counts[item.user.id] || 0) + 1
+    })
+    return counts
+  }, [wishlist])
+
   const resetFilters = () => {
     setSearchQuery("")
     setStatusFilter("all")
@@ -174,41 +222,55 @@ function FamilyWishlist() {
       <div className="space-y-8">
         <WishlistPageHeader />
 
-        <AddItemDialog 
-          categories={categories} 
-          onItemAdded={handleItemAdded}
-        />
-
-        <WishlistFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
-          categoryFilter={categoryFilter}
-          onCategoryFilterChange={setCategoryFilter}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          priceRange={priceRange}
-          onPriceRangeChange={setPriceRange}
+        <FamilyTabs
+          familyMembers={familyMembers}
+          currentUserId={user?.id || ""}
+          selectedUserId={selectedUser}
+          onUserChange={setSelectedUser}
+          itemCounts={itemCounts}
+          totalItemCount={wishlist.length}
           categories={categories}
-          onResetFilters={resetFilters}
-          displayedCount={displayedItems.length}
-          totalCount={filteredAndSortedItems.length}
-        />
+          onItemAdded={handleItemAdded}
+        >
+          <WishlistFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusFilterChange={setStatusFilter}
+            categoryFilter={categoryFilter}
+            onCategoryFilterChange={setCategoryFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            priceRange={priceRange}
+            onPriceRangeChange={setPriceRange}
+            categories={categories}
+            onResetFilters={resetFilters}
+            displayedCount={displayedItems.length}
+            totalCount={filteredAndSortedItems.length}
+            familyMembers={familyMembers}
+            currentUserId={user?.id || ""}
+          />
 
-        <WishlistGrid
-          items={filteredAndSortedItems}
-          displayedItems={displayedItems}
-          user={user!}
-          hasMoreItems={hasMoreItems}
-          totalCount={filteredAndSortedItems.length}
-          onShowMore={() => setItemsToShow(itemsToShow + 6)}
-          onAddItem={() => {/* AddItemDialog has its own trigger button */}}
-        />
+          <WishlistGrid
+            items={filteredAndSortedItems}
+            displayedItems={displayedItems}
+            user={user!}
+            hasMoreItems={hasMoreItems}
+            totalCount={filteredAndSortedItems.length}
+            onShowMore={() => setItemsToShow(itemsToShow + 6)}
+            onAddItem={() => {/* AddItemDialog has its own trigger button */}}
+            selectedUserId={selectedUser}
+            familyMembers={familyMembers}
+            categories={categories}
+            onItemAdded={handleItemAdded}
+            onItemUpdated={handleItemUpdated}
+          />
+        </FamilyTabs>
       </div>
     </PageLayout>
   )
 }
+
 
 // Export with authentication protection
 export default withAuth(FamilyWishlist)
