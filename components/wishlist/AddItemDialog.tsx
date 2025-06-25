@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Plus, DollarSign, Loader2 } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Plus, DollarSign, Loader2, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 
-import { Category } from "./types"
+import { Category, WishlistItem } from "./types"
 
 interface NewItemData {
   title: string
@@ -29,10 +29,13 @@ interface NewItemData {
 
 interface AddItemDialogProps {
   categories: Category[]
-  onItemAdded: (item: any) => void
+  onItemAdded?: (item: any) => void
+  onItemUpdated?: (item: any) => void
+  editItem?: WishlistItem
+  trigger?: React.ReactNode
 }
 
-export function AddItemDialog({ categories, onItemAdded }: AddItemDialogProps) {
+export function AddItemDialog({ categories, onItemAdded, onItemUpdated, editItem, trigger }: AddItemDialogProps) {
   const { toast } = useToast()
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -44,7 +47,28 @@ export function AddItemDialog({ categories, onItemAdded }: AddItemDialogProps) {
     categoryId: "",
   })
 
-  const handleAddItem = async () => {
+  // Initialize form with edit data if provided
+  useEffect(() => {
+    if (editItem) {
+      setNewItem({
+        title: editItem.title || "",
+        description: editItem.description || "",
+        price: editItem.price ? editItem.price.toString() : "",
+        productUrl: editItem.productUrl || "",
+        categoryId: editItem.categoryId || "",
+      })
+    } else {
+      setNewItem({
+        title: "",
+        description: "",
+        price: "",
+        productUrl: "",
+        categoryId: "",
+      })
+    }
+  }, [editItem, isOpen])
+
+  const handleSubmit = async () => {
     if (!newItem.title || !newItem.categoryId) {
       toast({
         title: "Validation Error",
@@ -57,8 +81,11 @@ export function AddItemDialog({ categories, onItemAdded }: AddItemDialogProps) {
     try {
       setIsSubmitting(true)
       
-      const response = await fetch('/api/wishlist-items', {
-        method: 'POST',
+      const url = editItem ? `/api/wishlist-items/${editItem.id}` : '/api/wishlist-items'
+      const method = editItem ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -72,8 +99,38 @@ export function AddItemDialog({ categories, onItemAdded }: AddItemDialogProps) {
       })
 
       if (response.ok) {
-        const data = await response.json()
-        onItemAdded(data.item)
+        const responseData = await response.json()
+        
+        if (editItem) {
+          if (responseData.data?.item) {
+            onItemUpdated?.(responseData.data.item)
+            toast({
+              title: "Success",
+              description: "Item updated successfully!",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: "Failed to get updated item data",
+              variant: "destructive",
+            })
+          }
+        } else {
+          if (responseData.data?.item) {
+            onItemAdded?.(responseData.data.item)
+            toast({
+              title: "Success",
+              description: "Item added to your wishlist!",
+            })
+          } else {
+            toast({
+              title: "Error",
+              description: "Failed to get new item data",
+              variant: "destructive",
+            })
+          }
+        }
+        
         setNewItem({
           title: "",
           description: "",
@@ -82,20 +139,16 @@ export function AddItemDialog({ categories, onItemAdded }: AddItemDialogProps) {
           categoryId: "",
         })
         setIsOpen(false)
-        toast({
-          title: "Success",
-          description: "Item added to your wishlist!",
-        })
       } else {
         const errorData = await response.json()
         toast({
           title: "Error",
-          description: errorData.message || "Failed to add item to wishlist.",
+          description: errorData.message || `Failed to ${editItem ? 'update' : 'add'} item.`,
           variant: "destructive",
         })
       }
     } catch (error) {
-      console.error('Failed to add item:', error)
+      console.error(`Failed to ${editItem ? 'update' : 'add'} item:`, error)
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -106,23 +159,29 @@ export function AddItemDialog({ categories, onItemAdded }: AddItemDialogProps) {
     }
   }
 
+  const defaultTrigger = (
+    <Button
+      size="lg"
+      className="btn-brand px-8 py-4 text-lg"
+    >
+      <Plus className="w-6 h-6 mr-2" />
+      Add to My Wishlist
+    </Button>
+  )
+
   return (
-    <div className="flex justify-center mb-8">
+    <div className={editItem ? "inline-block" : "flex justify-center mb-8"}>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
-          <Button
-            size="lg"
-            className="btn-brand px-8 py-4 text-lg"
-          >
-            <Plus className="w-6 h-6 mr-2" />
-            Add to My Wishlist
-          </Button>
+          {trigger || defaultTrigger}
         </DialogTrigger>
         <DialogContent className="sm:max-w-lg max-h-[90vh] rounded-2xl flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-2xl font-bold text-slate-800">Add New Wishlist Item</DialogTitle>
+            <DialogTitle className="text-2xl font-bold text-slate-800">
+              {editItem ? "Edit Wishlist Item" : "Add New Wishlist Item"}
+            </DialogTitle>
             <DialogDescription className="text-slate-600">
-              Add something special you'd love to receive
+              {editItem ? "Update your wishlist item details" : "Add something special you'd love to receive"}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-6 py-6 overflow-y-auto flex-1 min-h-0 pr-4 -mr-4">
@@ -207,19 +266,19 @@ export function AddItemDialog({ categories, onItemAdded }: AddItemDialogProps) {
               Cancel
             </Button>
             <Button
-              onClick={handleAddItem}
+              onClick={handleSubmit}
               disabled={isSubmitting}
               className="btn-brand"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Adding...
+                  {editItem ? "Updating..." : "Adding..."}
                 </>
               ) : (
                 <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Item
+                  {editItem ? <Edit className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                  {editItem ? "Update Item" : "Add Item"}
                 </>
               )}
             </Button>

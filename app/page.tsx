@@ -188,6 +188,10 @@ function FamilyWishlist() {
   }
 
   const handleItemUpdated = (updatedItem: WishlistItem) => {
+    if (!updatedItem) {
+      console.error('updatedItem is undefined!')
+      return
+    }
     setWishlist(prev => prev.map(item => 
       item.id === updatedItem.id ? updatedItem : item
     ))

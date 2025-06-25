@@ -40,7 +40,7 @@ export function WishlistGrid({
         <>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {displayedItems.map((item) => (
-              <WishlistItemComponent key={item.id} item={item} currentUser={user} onItemUpdated={onItemUpdated} />
+              <WishlistItemComponent key={item.id} item={item} currentUser={user} categories={categories} onItemUpdated={onItemUpdated} />
             ))}
           </div>
 

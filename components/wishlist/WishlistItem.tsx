@@ -4,16 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
+import { AddItemDialog } from "./AddItemDialog"
 
-import type { WishlistItem, User } from "./types"
+import type { WishlistItem, User, Category } from "./types"
 
 interface WishlistItemProps {
   item: WishlistItem
   currentUser: User
+  categories: Category[]
   onItemUpdated?: (updatedItem: WishlistItem) => void
 }
 
-export function WishlistItem({ item, currentUser, onItemUpdated }: WishlistItemProps) {
+export function WishlistItem({ item, currentUser, categories, onItemUpdated }: WishlistItemProps) {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   
@@ -182,21 +184,21 @@ export function WishlistItem({ item, currentUser, onItemUpdated }: WishlistItemP
             
             {/* Edit button for own items */}
             {isOwnItem && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  // TODO: Implement edit functionality
-                  toast({
-                    title: "Edit Item",
-                    description: "Edit functionality coming soon!",
-                  })
-                }}
-                className="rounded-xl border-slate-300 hover:bg-slate-50"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
+              <AddItemDialog
+                categories={categories}
+                editItem={item}
+                onItemUpdated={onItemUpdated}
+                trigger={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl border-slate-300 hover:bg-slate-50"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit
+                  </Button>
+                }
+              />
             )}
             
             {/* Reservation buttons for other people's items */}
