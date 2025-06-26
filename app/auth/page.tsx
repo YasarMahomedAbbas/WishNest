@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight, User } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight, User, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,6 +11,19 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter } from "next/navigation"
+
+// Validation types
+interface ValidationResult {
+  isValid: boolean
+  message: string
+}
+
+interface SignUpValidation {
+  name: ValidationResult
+  email: ValidationResult
+  password: ValidationResult
+  confirmPassword: ValidationResult
+}
 
 export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -29,6 +42,102 @@ export default function AuthPage() {
     confirmPassword: "",
     name: ""
   })
+
+  // Validation state for signup
+  const [validation, setValidation] = useState<SignUpValidation>({
+    name: { isValid: false, message: "" },
+    email: { isValid: false, message: "" },
+    password: { isValid: false, message: "" },
+    confirmPassword: { isValid: false, message: "" }
+  })
+  const [touched, setTouched] = useState({
+    name: false,
+    email: false,
+    password: false,
+    confirmPassword: false
+  })
+
+  // Validation functions
+  const validateName = (name: string): ValidationResult => {
+    if (!name.trim()) {
+      return { isValid: false, message: "Name is required" }
+    }
+    if (name.trim().length < 2) {
+      return { isValid: false, message: "Name must be at least 2 characters" }
+    }
+    if (name.trim().length > 50) {
+      return { isValid: false, message: "Name must be less than 50 characters" }
+    }
+    return { isValid: true, message: "Good!" }
+  }
+
+  const validateEmail = (email: string): ValidationResult => {
+    if (!email) {
+      return { isValid: false, message: "Email is required" }
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return { isValid: false, message: "Please enter a valid email address" }
+    }
+    return { isValid: true, message: "Valid email format" }
+  }
+
+  const validatePassword = (password: string): ValidationResult => {
+    if (!password) {
+      return { isValid: false, message: "Password is required" }
+    }
+    if (password.length < 8) {
+      return { isValid: false, message: "Password must be at least 8 characters" }
+    }
+    
+    const hasUppercase = /[A-Z]/.test(password)
+    const hasLowercase = /[a-z]/.test(password)
+    const hasNumbers = /\d/.test(password)
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    
+    const missingRequirements = []
+    if (!hasUppercase) missingRequirements.push("uppercase letter")
+    if (!hasLowercase) missingRequirements.push("lowercase letter")
+    if (!hasNumbers) missingRequirements.push("number")
+    if (!hasSpecialChar) missingRequirements.push("special character")
+    
+    if (missingRequirements.length > 0) {
+      return { 
+        isValid: false, 
+        message: `Password needs: ${missingRequirements.join(", ")}` 
+      }
+    }
+    
+    return { isValid: true, message: "Strong password!" }
+  }
+
+  const validateConfirmPassword = (password: string, confirmPassword: string): ValidationResult => {
+    if (!confirmPassword) {
+      return { isValid: false, message: "Please confirm your password" }
+    }
+    if (password !== confirmPassword) {
+      return { isValid: false, message: "Passwords don't match" }
+    }
+    return { isValid: true, message: "Passwords match!" }
+  }
+
+  // Real-time validation effect
+  useEffect(() => {
+    setValidation({
+      name: validateName(signUpData.name),
+      email: validateEmail(signUpData.email),
+      password: validatePassword(signUpData.password),
+      confirmPassword: validateConfirmPassword(signUpData.password, signUpData.confirmPassword)
+    })
+  }, [signUpData])
+
+  const handleFieldBlur = (field: keyof typeof touched) => {
+    setTouched(prev => ({ ...prev, [field]: true }))
+  }
+
+  const isFormValid = () => {
+    return Object.values(validation).every(field => field.isValid)
+  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,7 +165,9 @@ export default function AuthPage() {
 
       if (data.success) {
         // Redirect to main page
-        router.push('/')
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 100) // Small delay to ensure cookies are set
       }
     } catch (error: any) {
       console.error('Sign in error:', error)
@@ -70,13 +181,16 @@ export default function AuthPage() {
     e.preventDefault()
     setError("")
 
-    if (signUpData.password !== signUpData.confirmPassword) {
-      setError("Passwords don't match!")
-      return
-    }
+    // Mark all fields as touched to show validation errors
+    setTouched({
+      name: true,
+      email: true,
+      password: true,
+      confirmPassword: true
+    })
 
-    if (!signUpData.name.trim()) {
-      setError("Name is required!")
+    if (!isFormValid()) {
+      setError("Please fix the validation errors below")
       return
     }
 
@@ -104,7 +218,9 @@ export default function AuthPage() {
 
       if (data.success) {
         // Redirect to main page
-        router.push('/')
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 100) // Small delay to ensure cookies are set
       }
     } catch (error: any) {
       console.error('Sign up error:', error)
@@ -112,6 +228,33 @@ export default function AuthPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Helper function to get input classes based on validation state
+  const getInputClasses = (field: keyof typeof validation, baseClasses: string) => {
+    if (!touched[field]) return baseClasses
+    
+    const fieldValidation = validation[field]
+    if (fieldValidation.isValid) {
+      return `${baseClasses} border-green-300 focus:border-green-500 focus:ring-green-200`
+    } else {
+      return `${baseClasses} border-red-300 focus:border-red-500 focus:ring-red-200`
+    }
+  }
+
+  // Helper function to render validation message
+  const renderValidationMessage = (field: keyof typeof validation) => {
+    if (!touched[field]) return null
+    
+    const fieldValidation = validation[field]
+    const isValid = fieldValidation.isValid
+    
+    return (
+      <div className={`flex items-center gap-1 text-xs mt-1 ${isValid ? 'text-green-600' : 'text-red-600'}`}>
+        {isValid ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />}
+        <span>{fieldValidation.message}</span>
+      </div>
+    )
   }
 
   return (
@@ -265,10 +408,15 @@ export default function AuthPage() {
                         placeholder="Enter your full name"
                         value={signUpData.name}
                         onChange={(e) => setSignUpData({ ...signUpData, name: e.target.value })}
-                        className="pl-10 border-slate-300 rounded-xl h-12"
+                        onBlur={() => handleFieldBlur('name')}
+                        className={getInputClasses('name', "pl-10 rounded-xl h-12")}
                         required
                       />
+                      {touched.name && validation.name.isValid && (
+                        <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                      )}
                     </div>
+                    {renderValidationMessage('name')}
                   </div>
 
                   <div className="space-y-2">
@@ -283,10 +431,15 @@ export default function AuthPage() {
                         placeholder="Enter your email"
                         value={signUpData.email}
                         onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
-                        className="pl-10 border-slate-300 rounded-xl h-12"
+                        onBlur={() => handleFieldBlur('email')}
+                        className={getInputClasses('email', "pl-10 rounded-xl h-12")}
                         required
                       />
+                      {touched.email && validation.email.isValid && (
+                        <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                      )}
                     </div>
+                    {renderValidationMessage('email')}
                   </div>
 
                   <div className="space-y-2">
@@ -301,21 +454,30 @@ export default function AuthPage() {
                         placeholder="Create a password"
                         value={signUpData.password}
                         onChange={(e) => setSignUpData({ ...signUpData, password: e.target.value })}
-                        className="pl-10 pr-10 border-slate-300 rounded-xl h-12"
+                        onBlur={() => handleFieldBlur('password')}
+                        className={getInputClasses('password', "pl-10 pr-10 rounded-xl h-12")}
                         required
                         minLength={8}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                        {touched.password && validation.password.isValid && (
+                          <Check className="w-4 h-4 text-green-500" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-slate-400 hover:text-slate-600"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500">
-                      Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters
-                    </p>
+                    {renderValidationMessage('password')}
+                    {!touched.password && (
+                      <p className="text-xs text-slate-500">
+                        Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -330,17 +492,22 @@ export default function AuthPage() {
                         placeholder="Confirm your password"
                         value={signUpData.confirmPassword}
                         onChange={(e) => setSignUpData({ ...signUpData, confirmPassword: e.target.value })}
-                        className="pl-10 border-slate-300 rounded-xl h-12"
+                        onBlur={() => handleFieldBlur('confirmPassword')}
+                        className={getInputClasses('confirmPassword', "pl-10 rounded-xl h-12")}
                         required
                         minLength={8}
                       />
+                      {touched.confirmPassword && validation.confirmPassword.isValid && (
+                        <Check className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-500" />
+                      )}
                     </div>
+                    {renderValidationMessage('confirmPassword')}
                   </div>
 
                   <Button
                     type="submit"
-                    disabled={isLoading}
-                    className="w-full btn-primary text-white h-12 shadow-lg hover:shadow-xl font-medium"
+                    disabled={isLoading || !isFormValid()}
+                    className="w-full btn-primary text-white h-12 shadow-lg hover:shadow-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <div className="flex items-center gap-2">

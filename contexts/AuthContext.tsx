@@ -88,6 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (data.success && data.user) {
       setUser(data.user)
+    } else {
+      throw new Error('Login successful but user data not received')
     }
   }
 
@@ -113,6 +115,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     if (data.success && data.user) {
       setUser(data.user)
+    } else {
+      throw new Error('Registration successful but user data not received')
     }
   }
 

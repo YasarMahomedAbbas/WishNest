@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { z } from 'zod'
 import { db } from './db'
-import { ApiError, createAuthenticationError, createAuthorizationError, createRateLimitError, errorResponse } from './api-errors'
+import { ApiError, ApiErrorCode, createAuthenticationError, createAuthorizationError, createRateLimitError, errorResponse } from './api-errors'
 
 // Rate limiting store (in production, use Redis or similar)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
@@ -37,7 +37,7 @@ export interface RequestContext {
     id: string
     email: string
     name: string
-  }
+  } | null
 }
 
 // JWT Token verification
@@ -94,7 +94,7 @@ export function corsMiddleware(request: NextRequest, response: NextResponse) {
 
 // Rate limiting middleware
 export function rateLimitMiddleware(request: NextRequest) {
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
   const key = `rate_limit:${ip}`
   const now = Date.now()
   const windowMs = parseInt(process.env.API_RATE_LIMIT_WINDOW_MS || '900000') // 15 minutes
@@ -213,7 +213,7 @@ export async function resourceOwnershipMiddleware(userId: string, resourceType: 
       })
       break
     default:
-      throw new ApiError('VALIDATION_ERROR', 'Invalid resource type', 400)
+      throw new ApiError(ApiErrorCode.VALIDATION_ERROR, 'Invalid resource type', 400)
   }
   
   if (!resource) {
@@ -252,7 +252,7 @@ export function withMiddleware(
       // Check allowed methods
       if (options.allowedMethods && !options.allowedMethods.includes(request.method)) {
         return errorResponse(
-          new ApiError('VALIDATION_ERROR', `Method ${request.method} not allowed`, 405),
+          new ApiError(ApiErrorCode.VALIDATION_ERROR, `Method ${request.method} not allowed`, 405),
           405,
           request.url
         )
@@ -298,7 +298,7 @@ export async function getValidatedBody<T>(request: NextRequest, schema: z.ZodSch
     return validateRequest(schema, body)
   } catch (error) {
     if (error instanceof SyntaxError) {
-      throw new ApiError('VALIDATION_ERROR', 'Invalid JSON in request body', 400)
+      throw new ApiError(ApiErrorCode.VALIDATION_ERROR, 'Invalid JSON in request body', 400)
     }
     throw error
   }
