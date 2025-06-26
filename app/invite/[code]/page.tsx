@@ -122,7 +122,7 @@ function InvitePage() {
             <AlertCircle className="h-16 w-16 text-red-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-slate-900 mb-2">Invalid Invite</h2>
             <p className="text-slate-600 mb-6">{error}</p>
-            <Button onClick={() => router.push('/')} className="btn-brand">
+            <Button onClick={() => router.push('/')} className="btn-primary">
               <Home className="h-4 w-4 mr-2" />
               Go Home
             </Button>
@@ -161,11 +161,11 @@ function InvitePage() {
           {/* Family Stats */}
           <div className="flex justify-between items-center py-4 border-t border-b border-slate-200">
             <div className="text-center">
-              <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">{familyPreview.memberCount}</div>
+              <div className="text-2xl font-bold text-brand">{familyPreview.memberCount}</div>
               <div className="text-sm text-slate-600">Members</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <div className="text-2xl font-bold text-brand">
                 {new Date(familyPreview.createdAt).getFullYear()}
               </div>
               <div className="text-sm text-slate-600">Created</div>
