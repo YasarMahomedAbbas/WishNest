@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken'
+import jwt, { SignOptions } from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 import { db } from './db'
@@ -23,10 +23,10 @@ export interface UserSession {
 }
 
 // Constants
-const JWT_SECRET = process.env.JWT_SECRET!
-const ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || '4h'
-const REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '7d'
-const REMEMBER_ME_EXPIRES_IN = process.env.JWT_REMEMBER_ME_EXPIRES_IN || '30d'
+const JWT_SECRET = process.env.JWT_SECRET as string
+const ACCESS_TOKEN_EXPIRES_IN = (process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || '4h') as string
+const REFRESH_TOKEN_EXPIRES_IN = (process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '7d') as string
+const REMEMBER_ME_EXPIRES_IN = (process.env.JWT_REMEMBER_ME_EXPIRES_IN || '30d') as string
 const BCRYPT_COST_FACTOR = 12
 
 // Password utilities
@@ -43,7 +43,7 @@ export function generateAccessToken(payload: Omit<TokenPayload, 'type'>): string
   return jwt.sign(
     { ...payload, type: 'access' },
     JWT_SECRET,
-    { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
+    { expiresIn: ACCESS_TOKEN_EXPIRES_IN } as SignOptions
   )
 }
 
@@ -52,7 +52,7 @@ export function generateRefreshToken(payload: Omit<TokenPayload, 'type'>, rememb
   return jwt.sign(
     { ...payload, type: 'refresh' },
     JWT_SECRET,
-    { expiresIn }
+    { expiresIn } as SignOptions
   )
 }
 
@@ -248,7 +248,7 @@ export function generateEmailVerifyToken(): string {
   return jwt.sign(
     { type: 'email_verify', timestamp: Date.now() },
     JWT_SECRET,
-    { expiresIn: '24h' }
+    { expiresIn: '24h' } as SignOptions
   )
 }
 
@@ -266,7 +266,7 @@ export function generatePasswordResetToken(): string {
   return jwt.sign(
     { type: 'password_reset', timestamp: Date.now() },
     JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '1h' } as SignOptions
   )
 }
 
