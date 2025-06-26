@@ -56,7 +56,9 @@ export default function AuthPage() {
 
       if (data.success) {
         // Redirect to main page
-        router.push('/')
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 100) // Small delay to ensure cookies are set
       }
     } catch (error: any) {
       console.error('Sign in error:', error)
@@ -104,7 +106,9 @@ export default function AuthPage() {
 
       if (data.success) {
         // Redirect to main page
-        router.push('/')
+        setTimeout(() => {
+          window.location.href = '/'
+        }, 100) // Small delay to ensure cookies are set
       }
     } catch (error: any) {
       console.error('Sign up error:', error)
