@@ -24,7 +24,7 @@ export interface UserSession {
 
 // Constants
 const JWT_SECRET = process.env.JWT_SECRET!
-const ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || '30m'
+const ACCESS_TOKEN_EXPIRES_IN = process.env.JWT_ACCESS_TOKEN_EXPIRES_IN || '4h'
 const REFRESH_TOKEN_EXPIRES_IN = process.env.JWT_REFRESH_TOKEN_EXPIRES_IN || '7d'
 const REMEMBER_ME_EXPIRES_IN = process.env.JWT_REMEMBER_ME_EXPIRES_IN || '30d'
 const BCRYPT_COST_FACTOR = 12
@@ -198,12 +198,12 @@ export async function getUserFromAccessToken(token: string): Promise<UserSession
 export async function setAuthCookies(accessToken: string, refreshToken: string, rememberMe = false) {
   const cookieStore = await cookies()
   
-  // Set access token cookie (short-lived, httpOnly)
+  // Set access token cookie (4 hours to match JWT expiration)
   cookieStore.set('access_token', accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 30 * 60 // 30 minutes
+    maxAge: 4 * 60 * 60 // 4 hours
   })
   
   // Set refresh token cookie (longer-lived, httpOnly)

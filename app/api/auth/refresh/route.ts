@@ -26,7 +26,7 @@ async function refreshHandler(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 30 * 60 // 30 minutes
+      maxAge: 4 * 60 * 60 // 4 hours
     })
 
     return NextResponse.json({

@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Set up automatic token refresh
   useEffect(() => {
     if (user) {
-      // Set up token refresh interval (every 25 minutes)
+      // Set up token refresh interval (every 3.5 hours - 30 minutes before expiry)
       const refreshInterval = setInterval(async () => {
         try {
           await fetch('/api/auth/refresh', { method: 'POST' })
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // If refresh fails, logout user
           await logout()
         }
-      }, 25 * 60 * 1000) // 25 minutes
+      }, 3.5 * 60 * 60 * 1000) // 3.5 hours
 
       return () => clearInterval(refreshInterval)
     }

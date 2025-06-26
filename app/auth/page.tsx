@@ -214,7 +214,7 @@ export default function AuthPage() {
                       onCheckedChange={(checked) => setSignInData({ ...signInData, rememberMe: !!checked })}
                     />
                     <Label htmlFor="remember-me" className="text-sm text-slate-700">
-                      Remember me (30 days vs 7 days)
+                      Remember me
                     </Label>
                   </div>
 
