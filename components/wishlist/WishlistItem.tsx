@@ -13,38 +13,37 @@ interface WishlistItemProps {
   currentUser: User
   categories: Category[]
   onItemUpdated?: (updatedItem: WishlistItem) => void
+  onItemDeleted?: (itemId: string) => void
 }
 
-export function WishlistItem({ item, currentUser, categories, onItemUpdated }: WishlistItemProps) {
+export function WishlistItem({ item, currentUser, categories, onItemUpdated, onItemDeleted }: WishlistItemProps) {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   
   const isOwnItem = item.userId === currentUser.id
   const isReservedByCurrentUser = item.reservationDetails?.reservedBy === currentUser.id
 
-
-
   const getStatusBadge = (item: WishlistItem) => {
-    // Don't show status badge for user's own items to maintain surprise
+    // Show "Yours" badge for user's own items
     if (isOwnItem) {
-      return null
+      return <Badge variant="outline" className="status-reserved-by-me">Yours</Badge>
     }
     
     switch (item.status) {
       case "available":
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Available</Badge>
+        return <Badge variant="outline" className="status-available">Available</Badge>
       case "reserved":
         if (isReservedByCurrentUser) {
-          return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">Reserved by You</Badge>
+          return <Badge variant="outline" className="status-reserved-by-me">Reserved by You</Badge>
         }
-        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200">Reserved</Badge>
+        return <Badge variant="outline" className="status-reserved">Reserved</Badge>
       case "purchased":
         if (isReservedByCurrentUser) {
-          return <Badge className="bg-green-100 text-green-700 hover:bg-green-200">✓ Purchased by You</Badge>
+          return <Badge variant="outline" className="status-purchased-by-me">✓ Purchased by You</Badge>
         }
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-200">✓ Purchased</Badge>
+        return <Badge variant="outline" className="status-purchased">✓ Purchased</Badge>
       default:
-        return <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Available</Badge>
+        return <Badge variant="outline" className="status-available">Available</Badge>
     }
   }
 
@@ -133,13 +132,11 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
     }
   }
 
-
-
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border-slate-200 rounded-2xl overflow-hidden">
+    <Card className="wishlist-card">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
-          <CardTitle className="text-xl font-bold text-slate-800 line-clamp-2 group-hover:text-purple-600 transition-colors">
+          <CardTitle className="wishlist-card-title">
             {item.title}
           </CardTitle>
           {getStatusBadge(item)}
@@ -155,7 +152,7 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
           )}
         </div>
         {item.description && (
-          <CardDescription className="text-slate-600 line-clamp-3 leading-relaxed">
+          <CardDescription className="wishlist-card-description">
             {item.description}
           </CardDescription>
         )}
@@ -163,14 +160,14 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
       <CardContent className="pt-0">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-1">
-            <span className="text-3xl font-bold text-emerald-600">${item.price?.toFixed(2) || '0.00'}</span>
+            <span className="price-text text-3xl">${item.price?.toFixed(2) || '0.00'}</span>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
               asChild
-              className="rounded-xl border-slate-300 hover:bg-slate-50"
+              className="rounded-xl"
             >
               <a href={item.productUrl || ''} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="w-4 h-4 mr-2" />
@@ -184,11 +181,12 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
                 categories={categories}
                 editItem={item}
                 onItemUpdated={onItemUpdated}
+                onItemDeleted={onItemDeleted}
                 trigger={
                   <Button
                     variant="outline"
                     size="sm"
-                    className="rounded-xl border-slate-300 hover:bg-slate-50"
+                    className="rounded-xl"
                   >
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
@@ -206,7 +204,7 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
                     size="sm"
                     onClick={handleReserve}
                     disabled={isLoading}
-                    className="rounded-xl bg-purple-600 hover:bg-purple-700"
+                    className="btn-primary"
                   >
                     <ShoppingCart className="w-4 h-4 mr-2" />
                     Reserve
@@ -218,7 +216,7 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
                     size="sm"
                     onClick={handleCancelReservation}
                     disabled={isLoading}
-                    className="rounded-xl border-red-300 text-red-600 hover:bg-red-50"
+                    className="btn-danger"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
@@ -229,7 +227,7 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated }: W
           </div>
         </div>
 
-        <div className="text-sm text-slate-500 mt-4 pt-4 border-t border-slate-100">
+        <div className="wishlist-card-footer">
           Added{" "}
           {new Date(item.createdAt).toLocaleDateString("en-US", {
             month: "short",

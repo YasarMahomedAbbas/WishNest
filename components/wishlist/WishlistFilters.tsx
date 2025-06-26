@@ -49,23 +49,23 @@ export function WishlistFilters({
   currentUserId
 }: WishlistFiltersProps) {
   return (
-    <div className="card-default mb-8">
+    <div className="surface-card mb-8 p-8">
       <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
         {/* Search */}
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search wishlist items..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 border-slate-300 rounded-xl"
+            className="field-with-icon"
           />
         </div>
 
         {/* Quick Filters */}
         <div className="flex flex-wrap gap-3">
           <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-            <SelectTrigger className="w-32 border-slate-300 rounded-xl">
+            <SelectTrigger className="w-32 field-input">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -77,7 +77,7 @@ export function WishlistFilters({
           </Select>
 
           <Select value={categoryFilter} onValueChange={onCategoryFilterChange}>
-            <SelectTrigger className="w-32 border-slate-300 rounded-xl">
+            <SelectTrigger className="w-32 field-input">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -91,7 +91,7 @@ export function WishlistFilters({
           </Select>
 
           <Select value={sortBy} onValueChange={onSortChange}>
-            <SelectTrigger className="w-32 border-slate-300 rounded-xl">
+            <SelectTrigger className="w-32 field-input">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -106,7 +106,7 @@ export function WishlistFilters({
           {/* Advanced Filters */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="rounded-xl border-slate-300">
+              <Button variant="outline" className="rounded-xl">
                 <SlidersHorizontal className="w-4 h-4 mr-2" />
                 Filters
               </Button>
@@ -114,7 +114,7 @@ export function WishlistFilters({
             <PopoverContent className="w-80 rounded-2xl">
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">Price Range</Label>
+                  <Label className="text-body font-medium">Price Range</Label>
                   <div className="mt-2">
                     <Slider
                       value={priceRange}
@@ -123,7 +123,7 @@ export function WishlistFilters({
                       step={5}
                       className="w-full"
                     />
-                    <div className="flex justify-between text-sm text-slate-500 mt-1">
+                    <div className="flex-between text-caption mt-1">
                       <span>${priceRange[0]}</span>
                       <span>${priceRange[1]}</span>
                     </div>
@@ -139,8 +139,8 @@ export function WishlistFilters({
       </div>
 
       {/* Results Summary */}
-      <div className="mt-4 pt-4 border-t border-slate-200">
-        <p className="text-sm text-slate-600">
+      <div className="content-section">
+        <p className="text-caption">
           Showing {displayedCount} of {totalCount} wishlist items
         </p>
       </div>

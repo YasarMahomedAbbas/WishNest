@@ -29,7 +29,7 @@ export function WishlistHeader({ user, onLogout }: WishlistHeaderProps) {
   }
 
   return (
-    <div className="flex justify-between items-center mb-8">
+    <div className="flex-between mb-8">
       <div className="flex items-center gap-3">
         <div className="icon-brand">
           <Sparkles className="w-8 h-8 text-white" />
@@ -45,7 +45,7 @@ export function WishlistHeader({ user, onLogout }: WishlistHeaderProps) {
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar className="h-10 w-10">
                 <AvatarImage src="" alt={user?.name} />
-                <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                <AvatarFallback className="interactive-primary">
                   {user?.name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -54,8 +54,8 @@ export function WishlistHeader({ user, onLogout }: WishlistHeaderProps) {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">
+                <p className="text-body font-medium leading-none">{user?.name}</p>
+                <p className="text-caption leading-none">
                   {user?.email}
                 </p>
               </div>

@@ -197,6 +197,10 @@ function FamilyWishlist() {
     ))
   }
 
+  const handleItemDeleted = (deletedItemId: string) => {
+    setWishlist(prev => prev.filter(item => item.id !== deletedItemId))
+  }
+
   // Calculate item counts per user
   const itemCounts = useMemo(() => {
     const counts: { [userId: string]: number } = {}
@@ -268,6 +272,7 @@ function FamilyWishlist() {
             categories={categories}
             onItemAdded={handleItemAdded}
             onItemUpdated={handleItemUpdated}
+            onItemDeleted={handleItemDeleted}
           />
         </FamilyTabs>
       </div>

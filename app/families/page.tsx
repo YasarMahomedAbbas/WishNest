@@ -481,7 +481,7 @@ function FamiliesPage() {
           {!family && (
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="btn-brand text-white shadow-lg hover:shadow-xl">
+                <Button className="btn-primary text-white shadow-lg hover:shadow-xl">
                   <Plus className="h-4 w-4 mr-2" />
                   Create My Family
                 </Button>
@@ -811,7 +811,7 @@ function FamiliesPage() {
                   {family.members?.map((member) => (
                     <div key={member.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-medium">
+                        <div className="w-10 h-10 interactive-primary rounded-full flex items-center justify-center font-medium">
                           {member.user.name.charAt(0).toUpperCase()}
                         </div>
                         <div>

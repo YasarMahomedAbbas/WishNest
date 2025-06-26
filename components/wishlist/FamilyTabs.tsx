@@ -75,7 +75,7 @@ export function FamilyTabs({
 
   const getRoleIcon = (role?: string) => {
     if (role === 'admin') {
-      return <Crown className="w-3 h-3 text-amber-500" />
+      return <Crown className="w-3 h-3 text-yellow-500" />
     }
     return null
   }
@@ -84,10 +84,9 @@ export function FamilyTabs({
     const baseStyles = "group relative inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 rounded-lg min-w-0 flex-shrink-0"
     
     if (isActive) {
-      // All active tabs now use the same purple-pink gradient styling
-      return cn(baseStyles, "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25")
+      return cn(baseStyles, "interactive-primary shadow-lg shadow-red-500/25 !text-white")
     } else {
-      return cn(baseStyles, "text-slate-600 hover:text-slate-900 hover:bg-white/60 backdrop-blur-sm")
+      return cn(baseStyles, "interactive-secondary")
     }
   }
 
@@ -96,8 +95,8 @@ export function FamilyTabs({
       <Tabs value={selectedUserId} onValueChange={onUserChange} className="w-full">
         {/* Enhanced tab navigation */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl blur-sm"></div>
-          <TabsList className="relative inline-flex h-auto items-center justify-start rounded-2xl bg-slate-50/80 backdrop-blur-sm p-2 text-slate-500 w-full overflow-x-auto border border-slate-200/50 shadow-sm">
+          <div className="absolute inset-0 bg-gradient-to-r from-accent to-secondary rounded-2xl blur-sm"></div>
+          <TabsList className="surface-elevated relative inline-flex h-auto items-center justify-start w-full overflow-x-auto text-muted-foreground">
             {allTabs.map((tab) => {
               const isActive = selectedUserId === tab.id
               
@@ -113,7 +112,7 @@ export function FamilyTabs({
                     {tab.avatar ? (
                       <Avatar className="w-5 h-5 border border-white/20">
                         <AvatarImage src={tab.avatar} alt={tab.name} />
-                        <AvatarFallback className="text-xs bg-gradient-to-br from-slate-400 to-slate-500 text-white">
+                        <AvatarFallback className="text-xs bg-gradient-to-br from-accent to-secondary text-foreground">
                           {tab.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -147,7 +146,7 @@ export function FamilyTabs({
           </TabsList>
           
           {/* Mobile scroll hint */}
-          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50/80 to-transparent pointer-events-none rounded-r-2xl sm:hidden"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-accent/50 to-transparent pointer-events-none rounded-r-2xl sm:hidden"></div>
         </div>
         
         {/* Enhanced content area */}
@@ -155,14 +154,14 @@ export function FamilyTabs({
           {/* Show current selection info */}
           <div className="mb-6">
             {selectedUserId === 'all' ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-slate-600">
-                  <div className="p-2 rounded-lg bg-blue-50">
+              <div className="flex-between">
+                <div className="flex items-center gap-3 text-muted-foreground">
+                  <div className="icon-container bg-blue-50">
                     <Users className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900">Family Wishlist</h3>
-                    <p className="text-sm text-slate-500">
+                    <h3 className="text-heading text-foreground">Family Wishlist</h3>
+                    <p className="text-caption">
                       {totalItemCount === 1 ? '1 item' : `${totalItemCount} items`} from all family members
                     </p>
                   </div>
@@ -176,14 +175,14 @@ export function FamilyTabs({
                 )}
               </div>
             ) : selectedUserId === currentUserId ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-slate-600">
-                  <div className="p-2 rounded-lg bg-purple-50">
-                    <Star className="w-5 h-5 text-purple-600" />
+              <div className="flex-between">
+                <div className="flex items-center gap-3 text-muted-foreground">
+                  <div className="icon-container bg-red-50">
+                    <Star className="w-5 h-5 text-red-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-slate-900">My Wishlist</h3>
-                    <p className="text-sm text-slate-500">
+                    <h3 className="text-heading text-foreground">My Wishlist</h3>
+                    <p className="text-caption">
                       {itemCounts[currentUserId] === 1 ? '1 item' : `${itemCounts[currentUserId] || 0} items`} in your personal wishlist
                     </p>
                   </div>
@@ -201,10 +200,10 @@ export function FamilyTabs({
                 const selectedMember = familyMembers.find(m => m.id === selectedUserId)
                 const memberItemCount = itemCounts[selectedUserId] || 0
                 return (
-                  <div className="flex items-center gap-3 text-slate-600">
+                  <div className="flex items-center gap-3 text-muted-foreground">
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={selectedMember?.avatar} alt={selectedMember?.name} />
-                      <AvatarFallback className="bg-gradient-to-br from-slate-400 to-slate-600 text-white">
+                      <AvatarFallback className="bg-gradient-to-br from-accent to-secondary text-foreground">
                         {selectedMember?.name?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

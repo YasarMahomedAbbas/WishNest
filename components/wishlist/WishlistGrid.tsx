@@ -16,6 +16,7 @@ interface WishlistGridProps {
   categories: Category[]
   onItemAdded: (item: WishlistItem) => void
   onItemUpdated?: (updatedItem: WishlistItem) => void
+  onItemDeleted?: (itemId: string) => void
 }
 
 export function WishlistGrid({ 
@@ -30,7 +31,8 @@ export function WishlistGrid({
   familyMembers,
   categories,
   onItemAdded,
-  onItemUpdated
+  onItemUpdated,
+  onItemDeleted
 }: WishlistGridProps) {
   return (
     <div className="card-default">
@@ -40,7 +42,7 @@ export function WishlistGrid({
         <>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {displayedItems.map((item) => (
-              <WishlistItemComponent key={item.id} item={item} currentUser={user} categories={categories} onItemUpdated={onItemUpdated} />
+              <WishlistItemComponent key={item.id} item={item} currentUser={user} categories={categories} onItemUpdated={onItemUpdated} onItemDeleted={onItemDeleted} />
             ))}
           </div>
 

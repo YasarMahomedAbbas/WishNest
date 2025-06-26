@@ -137,7 +137,7 @@ if (response.ok) {
 ## REQUIRED Styles (Custom Classes Available)
 - **Page Background**: `app-page` (replaces long gradient classes)
 - **Container**: `app-container` (replaces max-w-7xl mx-auto px-4 py-8)
-- **Brand Buttons**: `btn-brand` (includes hover states and transitions)
+- **Brand Buttons**: `btn-primary` (includes hover states and transitions)
 - **Brand Text**: `text-brand` (includes gradient and bold styling)
 - **Cards**: `card-default` (standard card styling)
 - **Icon Containers**: `icon-brand` + `<Icon className="w-8 h-8 text-white" />`
