@@ -1,6 +1,6 @@
 import { db } from './db'
-import { hashPassword } from './auth'
-import { createConflictError, createValidationError } from './api-errors'
+import { hashPassword, verifyPassword } from './auth'
+import { createConflictError, createValidationError, createAuthorizationError } from './api-errors'
 
 export interface CreateUserData {
   email: string
@@ -13,6 +13,15 @@ export interface CreatedUser {
   id: string
   email: string
   name: string
+}
+
+export interface UpdateUserData {
+  name?: string
+}
+
+export interface UpdatePasswordData {
+  currentPassword: string
+  newPassword: string
 }
 
 /**
@@ -97,6 +106,111 @@ export async function deleteUser(userId: string): Promise<{ success: boolean }> 
   // Delete user (cascade will handle all related records)
   await db.user.delete({
     where: { id: userId }
+  })
+
+  return { success: true }
+}
+
+/**
+ * Updates user profile information
+ */
+export async function updateUser(userId: string, data: UpdateUserData): Promise<CreatedUser> {
+  // Check if user exists
+  const existingUser = await db.user.findUnique({
+    where: { id: userId }
+  })
+
+  if (!existingUser) {
+    throw createValidationError('User not found')
+  }
+
+  // Validate name if provided
+  if (data.name !== undefined) {
+    if (!data.name?.trim()) {
+      throw createValidationError('Name is required')
+    }
+    
+    if (data.name.trim().length < 2) {
+      throw createValidationError('Name must be at least 2 characters')
+    }
+    
+    if (data.name.trim().length > 100) {
+      throw createValidationError('Name must be less than 100 characters')
+    }
+  }
+
+  // Update user
+  const updatedUser = await db.user.update({
+    where: { id: userId },
+    data: {
+      ...(data.name !== undefined && { name: data.name.trim() })
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true
+    }
+  })
+
+  return updatedUser
+}
+
+/**
+ * Updates user password
+ */
+export async function updateUserPassword(userId: string, data: UpdatePasswordData): Promise<{ success: boolean }> {
+  // Check if user exists
+  const existingUser = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      password: true
+    }
+  })
+
+  if (!existingUser) {
+    throw createValidationError('User not found')
+  }
+
+  // Verify current password
+  const isCurrentPasswordValid = await verifyPassword(data.currentPassword, existingUser.password)
+  if (!isCurrentPasswordValid) {
+    throw createAuthorizationError('Current password is incorrect')
+  }
+
+  // Validate new password
+  if (!data.newPassword?.trim()) {
+    throw createValidationError('New password is required')
+  }
+  
+  if (data.newPassword.length < 8) {
+    throw createValidationError('New password must be at least 8 characters')
+  }
+  
+  // Check password strength
+  const hasUppercase = /[A-Z]/.test(data.newPassword)
+  const hasLowercase = /[a-z]/.test(data.newPassword)
+  const hasNumbers = /\d/.test(data.newPassword)
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(data.newPassword)
+  
+  if (!hasUppercase || !hasLowercase || !hasNumbers || !hasSpecialChar) {
+    throw createValidationError('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character')
+  }
+
+  // Check if new password is same as current
+  if (data.currentPassword === data.newPassword) {
+    throw createValidationError('New password must be different from current password')
+  }
+
+  // Hash new password
+  const hashedPassword = await hashPassword(data.newPassword)
+
+  // Update password
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword
+    }
   })
 
   return { success: true }

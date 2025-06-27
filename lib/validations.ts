@@ -30,8 +30,16 @@ export const loginUserSchema = z.object({
 })
 
 export const updateUserSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters').optional(),
-  email: emailSchema.optional(),
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be less than 100 characters').optional(),
+})
+
+export const updatePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: passwordSchema,
+  confirmNewPassword: z.string()
+}).refine((data) => data.newPassword === data.confirmNewPassword, {
+  message: "New passwords don't match",
+  path: ["confirmNewPassword"]
 })
 
 // Family validation schemas
@@ -168,6 +176,7 @@ export const wishlistItemResponseSchema = z.object({
 export type RegisterUser = z.infer<typeof registerUserSchema>
 export type LoginUser = z.infer<typeof loginUserSchema>
 export type UpdateUser = z.infer<typeof updateUserSchema>
+export type UpdatePassword = z.infer<typeof updatePasswordSchema>
 export type CreateFamily = z.infer<typeof createFamilySchema>
 export type UpdateFamily = z.infer<typeof updateFamilySchema>
 export type JoinFamily = z.infer<typeof joinFamilySchema>

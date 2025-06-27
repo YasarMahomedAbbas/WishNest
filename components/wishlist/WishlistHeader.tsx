@@ -1,6 +1,6 @@
 "use client"
 
-import { LogOut, Users, Sparkles } from "lucide-react"
+import { LogOut, Users, Sparkles, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { 
   DropdownMenu,
@@ -61,6 +61,10 @@ export function WishlistHeader({ user, onLogout }: WishlistHeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => window.location.href = '/settings'} className="cursor-pointer">
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Account Settings</span>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => window.location.href = '/families'} className="cursor-pointer">
               <Users className="mr-2 h-4 w-4" />
               <span>Manage Family</span>
