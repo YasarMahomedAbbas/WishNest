@@ -142,9 +142,16 @@ function FamilyWishlist() {
       )
     }
 
-    // Status filter
+    // Status filter - hide user's own items when filtering by status for privacy
     if (statusFilter !== "all") {
-      items = items.filter((item) => item.status === statusFilter)
+      items = items.filter((item) => {
+        // Hide current user's own items when filtering by status
+        if (item.user.id === user?.id) {
+          return false
+        }
+        // For other people's items, apply the status filter
+        return item.status === statusFilter
+      })
     }
 
     // Category filter
