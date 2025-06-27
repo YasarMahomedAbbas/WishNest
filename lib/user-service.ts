@@ -217,6 +217,81 @@ export async function updateUserPassword(userId: string, data: UpdatePasswordDat
 }
 
 /**
+ * Resets a user's password (admin only for family members)
+ */
+export async function resetUserPassword(adminUserId: string, targetUserId: string, familyId: string, newPassword: string): Promise<{ success: boolean }> {
+  // Check if admin user exists and has admin privileges for this family
+  const adminMembership = await db.familyMember.findUnique({
+    where: {
+      userId_familyId: {
+        userId: adminUserId,
+        familyId
+      }
+    }
+  })
+
+  if (!adminMembership || adminMembership.role !== 'ADMIN' || adminMembership.status !== 'ACTIVE') {
+    throw createAuthorizationError('Only family admins can reset member passwords')
+  }
+
+  // Check if target user is a member of the same family
+  const targetMembership = await db.familyMember.findUnique({
+    where: {
+      userId_familyId: {
+        userId: targetUserId,
+        familyId
+      }
+    }
+  })
+
+  if (!targetMembership || targetMembership.status !== 'ACTIVE') {
+    throw createValidationError('User is not an active member of this family')
+  }
+
+  // Cannot reset password of another admin
+  if (targetMembership.role === 'ADMIN') {
+    throw createAuthorizationError('Cannot reset passwords of other family admins')
+  }
+
+  // Cannot reset own password through this method
+  if (adminUserId === targetUserId) {
+    throw createValidationError('Cannot reset your own password through family management. Use account settings instead.')
+  }
+
+  // Validate new password
+  if (!newPassword?.trim()) {
+    throw createValidationError('New password is required')
+  }
+  
+  if (newPassword.length < 8) {
+    throw createValidationError('New password must be at least 8 characters')
+  }
+  
+  // Check password strength
+  const hasUppercase = /[A-Z]/.test(newPassword)
+  const hasLowercase = /[a-z]/.test(newPassword)
+  const hasNumbers = /\d/.test(newPassword)
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(newPassword)
+  
+  if (!hasUppercase || !hasLowercase || !hasNumbers || !hasSpecialChar) {
+    throw createValidationError('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character')
+  }
+
+  // Hash new password
+  const hashedPassword = await hashPassword(newPassword)
+
+  // Update password
+  await db.user.update({
+    where: { id: targetUserId },
+    data: {
+      password: hashedPassword
+    }
+  })
+
+  return { success: true }
+}
+
+/**
  * Adds an existing user to a family
  */
 export async function addUserToFamily(userId: string, familyId: string, role: 'ADMIN' | 'MEMBER' = 'MEMBER') {
