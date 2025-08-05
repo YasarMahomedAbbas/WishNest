@@ -41,7 +41,7 @@ Before installing WishNest, ensure you have the following installed on your PC:
 #### 1. Clone the Repository
 ```bash
 # Open terminal/command prompt and run:
-git clone https://github.com/YasarAbbas/wishnest.git
+git clone https://github.com/YasarMahomedAbbas/wishnest.git
 cd wishnest
 ```
 
@@ -98,21 +98,13 @@ If you encounter issues:
    sudo docker-compose up -d
    ```
 
-### System Requirements
-- **RAM**: Minimum 2GB, Recommended 4GB+
-- **Storage**: 1GB free space (more for database growth)
-- **OS**: Windows 10+, macOS 10.14+, or Linux
-- **Ports**: 3002 (and 5432 if using PostgreSQL)
-
-See [DOCKER-SETUP.md](./DOCKER-SETUP.md) for advanced Docker configuration.
-
 ### Option 2: Local Development
 
 **Prerequisites**: Node.js 18+ and npm/pnpm
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YasarAbbas/wishnest.git
+   git clone https://github.com/YasarMahomedAbbas/wishnest.git
    cd wishnest
    ```
 
@@ -152,8 +144,6 @@ WishNest supports both **SQLite** and **PostgreSQL**:
 - **SQLite**: Perfect for small families, no server required, single file
 - **PostgreSQL**: Better for multiple families, production deployment
 
-See [DATABASE-SETUP.md](./DATABASE-SETUP.md) for detailed setup instructions.
-
 ### Docker Compose Configuration
 
 The included `docker-compose.yml` automatically handles both SQLite and PostgreSQL setups:
@@ -190,18 +180,6 @@ volumes:
   postgres_data: 
 ```
 
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Application port | `3000` |
-| `DATABASE_URL` | PostgreSQL connection string | Required |
-| `SECRET_KEY` | JWT secret for authentication | Required |
-| `SMTP_HOST` | Email server for invitations | Optional |
-| `SMTP_PORT` | Email server port | `587` |
-| `ADMIN_EMAIL` | Default admin email | Required |
 
 ### Initial Setup
 
@@ -243,7 +221,7 @@ volumes:
 ### Local Development Setup
 ```bash
 # Clone repository
-git clone https://github.com/YasarAbbas/wishnest.git
+git clone https://github.com/YasarMahomedAbbas/wishnest.git
 cd wishnest
 
 # Install dependencies
