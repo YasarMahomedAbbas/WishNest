@@ -27,13 +27,88 @@ A self-hosted family wishlist application that brings gift-giving joy to your ho
 - **Purchase Tracking**: Mark items as purchased with optional notes
 - **Collaborative Features**: Multiple family members can contribute to expensive gifts
 
-## 🚀 Quick Start
+## 🚀 Installation Guide
 
 ### Prerequisites
-- Docker and Docker Compose installed on your system
-- Basic understanding of self-hosting applications
 
-### Installation
+Before installing WishNest, ensure you have the following installed on your PC:
+
+2. **Docker** - [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
+3. **Docker Compose** (usually included with Docker Desktop)
+
+### Step-by-Step Installation
+
+#### 1. Clone the Repository
+```bash
+# Open terminal/command prompt and run:
+git clone https://github.com/YasarAbbas/wishnest.git
+cd wishnest
+```
+
+#### 2. Choose Your Installation Method
+
+**Option A: Docker with SQLite (Recommended for most users)**
+```bash
+# Build and start the application
+sudo docker-compose build --no-cache
+sudo docker-compose up -d
+
+# Check if it's running
+sudo docker-compose ps
+```
+
+**Option B: Docker with PostgreSQL (For production/multiple families)**
+```bash
+# Start with PostgreSQL database
+sudo docker-compose --profile postgres up -d
+
+# Check if both containers are running
+sudo docker-compose ps
+```
+
+#### 3. Access Your Application
+- Open your web browser
+- Navigate to: **http://localhost:3002**
+- Create your admin account and start adding family members!
+
+### Troubleshooting
+
+If you encounter issues:
+
+1. **Check container status:**
+   ```bash
+   sudo docker-compose ps
+   ```
+
+2. **View logs:**
+   ```bash
+   sudo docker-compose logs wishnest
+   ```
+
+3. **Restart if needed:**
+   ```bash
+   sudo docker-compose down
+   sudo docker-compose up -d
+   ```
+
+4. **Complete rebuild (if major issues):**
+   ```bash
+   sudo docker-compose down
+   sudo docker-compose build --no-cache
+   sudo docker-compose up -d
+   ```
+
+### System Requirements
+- **RAM**: Minimum 2GB, Recommended 4GB+
+- **Storage**: 1GB free space (more for database growth)
+- **OS**: Windows 10+, macOS 10.14+, or Linux
+- **Ports**: 3002 (and 5432 if using PostgreSQL)
+
+See [DOCKER-SETUP.md](./DOCKER-SETUP.md) for advanced Docker configuration.
+
+### Option 2: Local Development
+
+**Prerequisites**: Node.js 18+ and npm/pnpm
 
 1. **Clone the repository**
    ```bash
@@ -41,49 +116,78 @@ A self-hosted family wishlist application that brings gift-giving joy to your ho
    cd wishnest
    ```
 
-2. **Configure environment variables**
+2. **Install dependencies**
    ```bash
-   cp .env.example .env
-   # Edit .env with your preferred settings
+   npm install
    ```
 
-3. **Start the application**
+3. **Setup database** (choose one option)
+
+   **Option A: SQLite (Simple - Recommended for development)**
    ```bash
-   docker-compose up -d
+   npm run db:setup-sqlite
    ```
 
-4. **Access the application**
+   **Option B: PostgreSQL (Production-ready)**
+   ```bash
+   # Install PostgreSQL first, then:
+   npm run db:setup-postgresql
+   # Update .env.local with your PostgreSQL credentials
+   ```
+
+4. **Start the application**
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the application**
    - Open your browser and navigate to `http://localhost:3000`
    - Create your family admin account
    - Invite family members via email or share registration links
 
+### Database Options
+
+WishNest supports both **SQLite** and **PostgreSQL**:
+
+- **SQLite**: Perfect for small families, no server required, single file
+- **PostgreSQL**: Better for multiple families, production deployment
+
+See [DATABASE-SETUP.md](./DATABASE-SETUP.md) for detailed setup instructions.
+
 ### Docker Compose Configuration
 
+The included `docker-compose.yml` automatically handles both SQLite and PostgreSQL setups:
+
 ```yaml
-# Basic docker-compose.yml example
-version: '3.8'
+# Current docker-compose.yml (simplified view)
 services:
   wishnest:
-    image: wishnest:latest
+    container_name: wishnest
+    build: .
     ports:
-      - "3000:3000"
+      - "3002:3000"
     environment:
-      - DATABASE_URL=postgresql://user:pass@db:5432/wishlist
-      - SECRET_KEY=your-secret-key-here
-    depends_on:
-      - db
-  
-  db:
-    image: postgres:15
+      - DATABASE_URL=${DATABASE_URL:-file:./data/wishnest.db}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+    volumes:  
+      - ./data:/app/data
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
     environment:
-      - POSTGRES_DB=wishlist
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=${POSTGRES_DB:-wishnest}
+      - POSTGRES_USER=${POSTGRES_USER:-wishnest}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-wishnest123}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    profiles:
+      - postgres
 
 volumes:
-  postgres_data:
+  postgres_data: 
 ```
 
 ## 🔧 Configuration

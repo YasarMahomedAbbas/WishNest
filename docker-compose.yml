@@ -1,23 +1,35 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:15
-    container_name: wishnest-postgres
-    restart: always
-    environment:
-      POSTGRES_USER: wishnest
-      POSTGRES_PASSWORD: wishnest123
-      POSTGRES_DB: wishnest
+  wishnest:
+    container_name: wishnest
+    build: .
     ports:
-      - "5432:5432"
+      - "3002:3000"
+    environment:
+      # Database configuration - will auto-detect
+      - DATABASE_URL=${DATABASE_URL:-file:./data/wishnest.db}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3002}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your-nextauth-secret-change-this-in-production}
+    volumes:  
+      # SQLite database file (if using SQLite)
+      - ./data:/app/data
+      # PostgreSQL data (if using PostgreSQL) - only needed when using postgres profile
+    depends_on: []
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-wishnest}
+      - POSTGRES_USER=${POSTGRES_USER:-wishnest}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-wishnest123}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U wishnest"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    profiles:
+      - postgres
 
 volumes:
   postgres_data: 
