@@ -16,6 +16,7 @@ import {
   AddMemberDialog,
   ResetPasswordDialog,
   ConfirmationDialog,
+  JoinFamilyDialog,
   type Family
 } from '@/components/family'
 
@@ -153,42 +154,71 @@ function FamiliesPage() {
 
   return (
     <div className="app-page">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-4 sm:py-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/')}
-              className="mr-2"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Wishlist
-            </Button>
-            <div className="icon-brand">
-              <Users className="h-6 w-6 text-white" />
+        <div className="space-y-4 mb-6 sm:mb-8">
+          {/* Back button and title row */}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/')}
+                className="shrink-0"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                <span className="hidden xs:inline">Back to Wishlist</span>
+                <span className="xs:hidden">Back</span>
+              </Button>
+              <div className="icon-brand shrink-0">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl text-brand">My Family</h1>
+                <p className="text-xs sm:text-sm text-slate-600 hidden sm:block">Manage your family group and invite members</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl text-brand">My Family</h1>
-              <p className="text-sm text-slate-600">Manage your family group and invite members</p>
+            
+            {/* Action buttons - hidden on mobile, shown on larger screens */}
+            <div className="hidden sm:flex gap-2 shrink-0">
+              {!family && (
+                <>
+                  <FamilyCreationDialog onFamilyCreated={fetchFamily} />
+                  <JoinFamilyDialog onFamilyJoined={fetchFamily} />
+                </>
+              )}
             </div>
           </div>
           
-          {!family && <FamilyCreationDialog onFamilyCreated={fetchFamily} />}
+          {/* Mobile action buttons */}
+          <div className="flex flex-col xs:flex-row gap-2 sm:hidden">
+            {!family && (
+              <>
+                <FamilyCreationDialog onFamilyCreated={fetchFamily} />
+                <JoinFamilyDialog onFamilyJoined={fetchFamily} />
+              </>
+            )}
+          </div>
+          
+          {/* Mobile subtitle */}
+          <p className="text-sm text-slate-600 sm:hidden">Manage your family group and invite members</p>
         </div>
 
         {/* Family Details or Create Family */}
         {!family ? (
-          <Card className="text-center py-12 surface-card">
-            <CardContent>
-              <Users className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+          <Card className="text-center py-8 sm:py-12 surface-card">
+            <CardContent className="px-4 sm:px-6">
+              <Users className="h-12 w-12 sm:h-16 sm:w-16 text-slate-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-slate-900 mb-2">No family yet</h3>
-              <p className="text-slate-600 mb-4">Create your family to start sharing wishlists with your loved ones</p>
+              <p className="text-slate-600 mb-6 text-sm sm:text-base">Create your family to start sharing wishlists with your loved ones</p>
+              <div className="flex flex-col xs:flex-row gap-3 justify-center max-w-sm mx-auto">
+                <FamilyCreationDialog onFamilyCreated={fetchFamily} />
+                <JoinFamilyDialog onFamilyJoined={fetchFamily} />
+              </div>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Family Overview Card */}
             <FamilyOverviewCard 
               family={family}
@@ -212,6 +242,24 @@ function FamiliesPage() {
                 onMemberAdded={fetchFamily}
               />
             </FamilyMembersList>
+          </div>
+        )}
+
+        {/* Leave Family Section - Only shown when user has a family */}
+        {family && (
+          <div className="mt-12 pt-8 border-t border-slate-200">
+            <div className="text-center space-y-3">
+              <h3 className="text-sm font-medium text-slate-500">Need to switch families?</h3>
+              <div className="space-y-2">
+                <JoinFamilyDialog 
+                  currentFamilyName={family.name}
+                  onFamilyJoined={fetchFamily}
+                />
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  You can join a different family using an invite code. This will remove you from your current family.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
