@@ -201,7 +201,7 @@ export async function setAuthCookies(accessToken: string, refreshToken: string, 
   // Set access token cookie (4 hours to match JWT expiration)
   cookieStore.set('access_token', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     sameSite: 'lax',
     maxAge: 4 * 60 * 60 // 4 hours
   })
@@ -210,7 +210,7 @@ export async function setAuthCookies(accessToken: string, refreshToken: string, 
   const refreshMaxAge = rememberMe ? 30 * 24 * 60 * 60 : 7 * 24 * 60 * 60 // 30 days or 7 days
   cookieStore.set('refresh_token', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     sameSite: 'lax',
     maxAge: refreshMaxAge
   })
@@ -221,14 +221,14 @@ export async function clearAuthCookies() {
   
   cookieStore.set('access_token', '', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     sameSite: 'lax',
     maxAge: 0
   })
   
   cookieStore.set('refresh_token', '', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     sameSite: 'lax',
     maxAge: 0
   })
