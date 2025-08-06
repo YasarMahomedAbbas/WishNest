@@ -37,7 +37,7 @@ export function WishlistGrid({
   return (
     <div className="card-default">
       {items.length === 0 ? (
-        <EmptyWishlist onAddItem={onAddItem} />
+        <EmptyWishlist onAddItem={onAddItem} categories={categories} onItemAdded={onItemAdded} />
       ) : (
         <>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
