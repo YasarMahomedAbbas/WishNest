@@ -2,30 +2,11 @@
 
 A self-hosted family wishlist application that brings gift-giving joy to your household! Allow family members to create and manage wishlists, while others can secretly reserve gifts without spoiling the surprise.
 
-## ✨ Features
-
 ### 🏠 Family-Focused Design
 - **Multi-User Support**: Each family member has their own account and wishlist
 - **Privacy Controls**: Users can't see which items are reserved for them
-- **Family Groups**: Organize multiple family units or friend groups
-
-### 🛍️ Wishlist Management
 - **Easy Item Addition**: Simply paste links from Amazon, Steam, or any online store
-- **Price Tracking**: Monitor price changes and set budget-friendly alerts
 - **Rich Details**: Add descriptions, categories, priorities, and notes
-- **Image Support**: Automatic image fetching from product links
-
-### 🎯 Smart Filtering & Organization
-- **Category Filters**: Browse by electronics, books, games, clothing, etc.
-- **Price Range Filters**: Find gifts within your budget
-- **Priority Sorting**: See most-wanted items first
-- **Search Functionality**: Quickly find specific items
-
-### 🤝 Gift Coordination
-- **Item Reservation**: Reserve gifts to avoid duplicate purchases
-- **Hidden Reservations**: Maintain surprise while coordinating with family
-- **Purchase Tracking**: Mark items as purchased with optional notes
-- **Collaborative Features**: Multiple family members can contribute to expensive gifts
 
 ## 🚀 Installation Guide
 
@@ -186,7 +167,6 @@ volumes:
 1. **Create Family Group**: Set up your family name and basic settings
 2. **Invite Members**: Send invitation links or emails to family members
 3. **Configure Categories**: Customize item categories to match your family's interests
-4. **Set Privacy Rules**: Configure who can see what within your family group
 
 ## 📱 Usage
 
@@ -212,10 +192,12 @@ volumes:
 ## 🛠️ Development
 
 ### Technology Stack
-- **Frontend**: [Framework TBD]
-- **Backend**: [Framework TBD]
-- **Database**: PostgreSQL
-- **Authentication**: JWT-based
+- **Frontend**: Next.js 15 with React 19
+- **Backend**: Next.js API Routes (Node.js runtime)
+- **Database**: SQLite (default) with PostgreSQL support via Docker
+- **ORM**: Prisma
+- **Authentication**: JWT-based with bcrypt
+- **UI Components**: Radix UI with Tailwind CSS
 - **Containerization**: Docker & Docker Compose
 
 ### Local Development Setup
@@ -238,13 +220,6 @@ npm run dev
 We welcome contributions! Please read our contributing guidelines and submit pull requests to help improve WishNest.
 
 ## 📋 Roadmap
-
-### Version 1.0 (Current Development)
-- [ ] Core wishlist functionality
-- [ ] User authentication and family groups
-- [ ] Basic reservation system
-- [ ] Docker deployment setup
-
 ### Version 1.1 (Planned)
 - [ ] Mobile-responsive design improvements
 - [ ] Email notifications for reservations
@@ -273,18 +248,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 If you find WishNest helpful and would like to support its development, consider buying me a coffee!
 
-[![Buy Me A Coffee](bmc_qr.png)](https://coff.ee/YasarAbbas)
 
 **[☕ Buy me a coffee at coff.ee/YasarAbbas](https://coff.ee/YasarAbbas)**
 
 Your support helps maintain and improve this project for families everywhere! 🎁
 
 ---
-
-## 📞 Contact & Community
-
-- **GitHub Issues**: For bug reports and feature requests
-- **Email**: [Your email for direct contact]
-- **Documentation**: [Link to detailed docs when available]
-
 Made with ❤️ for families who love giving the perfect gifts. 
