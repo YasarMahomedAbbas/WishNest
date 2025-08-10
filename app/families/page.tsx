@@ -19,6 +19,7 @@ import {
   JoinFamilyDialog,
   type Family
 } from '@/components/family'
+  import CategoryManager from '@/components/family/CategoryManager'
 
 function FamiliesPage() {
   const { user } = useAuth()
@@ -229,6 +230,9 @@ function FamiliesPage() {
                 onInviteCodeRegenerated={fetchFamily}
               />
             </FamilyOverviewCard>
+
+            {/* Categories */}
+            <CategoryManager familyId={family.id} />
 
             {/* Family Members */}
             <FamilyMembersList

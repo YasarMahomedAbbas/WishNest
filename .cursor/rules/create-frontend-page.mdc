@@ -172,6 +172,7 @@ if (loading) {
 - Export protected pages with `withAuth(Component)`
 - **ALWAYS access API data via `.data` property**
 - Add console.log for API responses during development
+- ALWAYS use the tailwind.config.ts for styling
 
 ## DON'T
 - Create pages without the required background/container structure
