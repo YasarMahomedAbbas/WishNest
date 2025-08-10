@@ -1,8 +1,8 @@
 # Use Node.js 18 Alpine
 FROM node:18-alpine
 
-# Install dependencies including OpenSSL for Prisma
-RUN apk add --no-cache libc6-compat openssl openssl-dev
+# Install dependencies including OpenSSL for Prisma and Postgres client for health checks
+RUN apk add --no-cache libc6-compat openssl openssl-dev postgresql-client
 WORKDIR /app
 
 # Copy package files

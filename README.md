@@ -39,11 +39,24 @@ sudo docker-compose ps
 ```
 
 **Option B: Docker with PostgreSQL (For production/multiple families)**
-```bash
-# Start with PostgreSQL database
-sudo docker-compose --profile postgres up -d
+1) Create a `.env` file in the project root with:
 
-# Check if both containers are running
+```
+DATABASE_URL=postgresql://wishnest:wishnest123@postgres:5432/wishnest
+# Optional hardening (recommended defaults)
+ALLOW_PRISMA_DB_PUSH=false
+ALLOW_PRISMA_FORCE_RESET=false
+```
+
+2) Start with PostgreSQL database
+
+```bash
+sudo docker-compose --profile postgres up -d
+```
+
+3) Check if both containers are running
+
+```bash
 sudo docker-compose ps
 ```
 
