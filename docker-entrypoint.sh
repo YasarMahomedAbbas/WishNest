@@ -67,25 +67,37 @@ run_migrations() {
     # Set environment for the migration command
     export DATABASE_URL="$DATABASE_URL"
     
-    # Try to deploy existing migrations first
+    # Try to deploy existing migrations first (non-destructive)
     if npx prisma migrate deploy 2>/dev/null; then
         echo "✅ Database migrations deployed successfully"
-    else
-        echo "ℹ️  No existing migrations found, pushing schema directly..."
-        # If no migrations exist, use db push as fallback
-        if npx prisma db push --accept-data-loss --skip-generate; then
-            echo "✅ Database schema pushed successfully"
-        else
-            echo "❌ Failed to push database schema"
-            echo "🔄 Attempting to reset and push schema..."
-            # Last resort: reset and push
-            npx prisma db push --force-reset --accept-data-loss --skip-generate || {
-                echo "❌ All database setup attempts failed"
-                exit 1
-            }
-            echo "✅ Database schema reset and pushed successfully"
-        fi
+        return 0
     fi
+
+    echo "❌ prisma migrate deploy failed."
+
+    # Optional: allow non-destructive db push if explicitly enabled
+    if [ "${ALLOW_PRISMA_DB_PUSH:-false}" = "true" ]; then
+        echo "ℹ️  Attempting prisma db push (non-destructive)."
+        if npx prisma db push --skip-generate; then
+            echo "✅ Database schema pushed successfully"
+            return 0
+        fi
+        echo "❌ prisma db push failed."
+    fi
+
+    # Explicit opt-in required for destructive reset
+    if [ "${ALLOW_PRISMA_FORCE_RESET:-false}" = "true" ]; then
+        echo "⚠️  ALLOW_PRISMA_FORCE_RESET=true set. Performing destructive reset..."
+        npx prisma db push --force-reset --accept-data-loss --skip-generate || {
+            echo "❌ All database setup attempts failed"
+            exit 1
+        }
+        echo "✅ Database schema reset and pushed successfully"
+        return 0
+    fi
+
+    echo "❌ Aborting startup to protect data. Fix migrations or set ALLOW_PRISMA_DB_PUSH / ALLOW_PRISMA_FORCE_RESET explicitly."
+    exit 1
 }
 
 # Main execution
