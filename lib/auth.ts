@@ -20,6 +20,7 @@ export interface UserSession {
   id: string
   email: string
   name: string
+  isAdmin: boolean
 }
 
 // Constants
@@ -181,14 +182,18 @@ export async function getUserFromAccessToken(token: string): Promise<UserSession
     
     const user = await db.user.findUnique({
       where: { id: payload.userId },
-      select: {
-        id: true,
-        email: true,
-        name: true
-      }
     })
-    
-    return user
+
+    if (!user) return null
+
+    const session: UserSession = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      isAdmin: (user as any).isAdmin ?? false,
+    }
+
+    return session
   } catch {
     return null
   }

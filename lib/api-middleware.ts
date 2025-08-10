@@ -28,6 +28,7 @@ export interface AuthenticatedRequest extends NextRequest {
     id: string
     email: string
     name: string
+    isAdmin: boolean
   }
 }
 
@@ -37,6 +38,7 @@ export interface RequestContext {
     id: string
     email: string
     name: string
+    isAdmin: boolean
   } | null
 }
 
@@ -60,18 +62,18 @@ export async function getUserFromToken(token: string) {
   
   const user = await db.user.findUnique({
     where: { id: decoded.userId },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-    }
   })
   
   if (!user) {
     throw createAuthenticationError('User not found')
   }
   
-  return user
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    isAdmin: (user as any).isAdmin ?? false,
+  }
 }
 
 // CORS middleware
@@ -138,7 +140,7 @@ export function rateLimitMiddleware(request: NextRequest) {
 }
 
 // Authentication middleware
-export async function authMiddleware(request: NextRequest): Promise<{ id: string; email: string; name: string }> {
+export async function authMiddleware(request: NextRequest): Promise<{ id: string; email: string; name: string; isAdmin: boolean }> {
   // First try Authorization header
   const authHeader = request.headers.get('authorization')
   let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null
@@ -158,12 +160,23 @@ export async function authMiddleware(request: NextRequest): Promise<{ id: string
 }
 
 // Optional authentication middleware (doesn't throw if no token)
-export async function optionalAuthMiddleware(request: NextRequest): Promise<{ id: string; email: string; name: string } | null> {
+export async function optionalAuthMiddleware(request: NextRequest): Promise<{ id: string; email: string; name: string; isAdmin: boolean } | null> {
   try {
     return await authMiddleware(request)
   } catch {
     return null
   }
+}
+
+// Admin authentication middleware
+export async function adminAuthMiddleware(request: NextRequest): Promise<{ id: string; email: string; name: string; isAdmin: boolean }> {
+  const user = await authMiddleware(request)
+  
+  if (!user.isAdmin) {
+    throw createAuthorizationError('Admin access required')
+  }
+  
+  return user
 }
 
 // Authorization middleware for family access

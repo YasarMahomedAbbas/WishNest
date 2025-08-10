@@ -13,6 +13,7 @@ export interface CreatedUser {
   id: string
   email: string
   name: string
+  isAdmin: boolean
 }
 
 export interface UpdateUserData {
@@ -72,21 +73,37 @@ export async function createUser({
   // Hash password
   const hashedPassword = await hashPassword(password)
 
+  // Check if this will be the first user (admin)
+  const userCount = await db.user.count()
+  const isFirstUser = userCount === 0
+
+  // Check if environment specifies specific admin email(s)
+  const normalizedEmail = email.trim().toLowerCase()
+  const envAdminEmailsRaw = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '').toString()
+  const envAdminEmails = envAdminEmailsRaw
+    .split(/[,;\s]+/)
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean)
+
+  const matchesAdminEnv = envAdminEmails.includes(normalizedEmail)
+
   // Create user
-  const user = await db.user.create({
+  const created = await db.user.create({
     data: {
-      email: email.trim().toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
-      name: name.trim()
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true
-    }
+      name: name.trim(),
+      // Cast to any to accommodate generated client types if out of sync
+      isAdmin: isFirstUser || matchesAdminEnv,
+    } as any,
   })
 
-  return user
+  return {
+    id: created.id,
+    email: created.email,
+    name: created.name,
+    isAdmin: (created as any).isAdmin ?? false,
+  }
 }
 
 /**
@@ -140,19 +157,19 @@ export async function updateUser(userId: string, data: UpdateUserData): Promise<
   }
 
   // Update user
-  const updatedUser = await db.user.update({
+  const updated = await db.user.update({
     where: { id: userId },
     data: {
       ...(data.name !== undefined && { name: data.name.trim() })
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true
     }
   })
 
-  return updatedUser
+  return {
+    id: updated.id,
+    email: updated.email,
+    name: updated.name,
+    isAdmin: (updated as any).isAdmin ?? false,
+  }
 }
 
 /**
