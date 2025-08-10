@@ -18,6 +18,7 @@ async function meHandler(request: NextRequest, context: any) {
         id: true,
         email: true,
         name: true,
+        isAdmin: true,
         createdAt: true,
         updatedAt: true
       }
@@ -33,6 +34,7 @@ async function meHandler(request: NextRequest, context: any) {
         id: user.id,
         email: user.email,
         name: user.name,
+        isAdmin: user.isAdmin,
         emailVerified: false, // TODO: Add when email verification is implemented
         createdAt: user.createdAt,
         updatedAt: user.updatedAt

@@ -42,6 +42,7 @@ export default function AuthPage() {
     confirmPassword: "",
     name: ""
   })
+  const [willBeAdmin, setWillBeAdmin] = useState<{ willBeAdmin: boolean; reason: 'first_user' | 'env_match' | null } | null>(null)
 
   // Validation state for signup
   const [validation, setValidation] = useState<SignUpValidation>({
@@ -130,6 +131,25 @@ export default function AuthPage() {
       confirmPassword: validateConfirmPassword(signUpData.password, signUpData.confirmPassword)
     })
   }, [signUpData])
+
+  // Check if this signup will create an admin
+  useEffect(() => {
+    const run = async () => {
+      const email = signUpData.email.trim()
+      if (!email) { setWillBeAdmin(null); return }
+      try {
+        const res = await fetch(`/api/auth/will-be-admin?email=${encodeURIComponent(email)}`)
+        if (!res.ok) return
+        const data = await res.json()
+        if (data?.success) {
+          setWillBeAdmin(data.data)
+        }
+      } catch {
+        // ignore
+      }
+    }
+    run()
+  }, [signUpData.email])
 
   const handleFieldBlur = (field: keyof typeof touched) => {
     setTouched(prev => ({ ...prev, [field]: true }))
@@ -393,6 +413,13 @@ export default function AuthPage() {
               <CardHeader className="pb-4 pt-8 px-8">
                 <CardTitle className="text-2xl font-bold text-slate-800">Create account</CardTitle>
                 <CardDescription className="text-slate-600">Join your family's wishlist community</CardDescription>
+                {willBeAdmin?.willBeAdmin && (
+                  <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                    You are creating an admin account
+                    {willBeAdmin.reason === 'first_user' && ' (first user)'}
+                    {willBeAdmin.reason === 'env_match' && ' (admin email matched)'}.
+                  </div>
+                )}
               </CardHeader>
               <CardContent className="px-8 pb-8">
                 <form onSubmit={handleSignUp} className="space-y-6">

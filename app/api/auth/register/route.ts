@@ -47,6 +47,7 @@ async function registerHandler(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
+        isAdmin: user.isAdmin,
         emailVerified: false // TODO: Add email verification later
       }
     }, { status: 201 })

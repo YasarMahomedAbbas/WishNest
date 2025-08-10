@@ -10,6 +10,8 @@ services:
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3002}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your-nextauth-secret-change-this-in-production}
+      # Admin bootstrap (comma-separated emails allowed)
+      - ADMIN_EMAILS=${ADMIN_EMAILS:-}
     volumes:  
       # SQLite database file (if using SQLite)
       - ./data:/app/data
