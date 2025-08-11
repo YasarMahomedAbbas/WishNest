@@ -26,35 +26,37 @@ git clone https://github.com/YasarMahomedAbbas/wishnest.git
 cd wishnest
 ```
 
-#### 2. Choose Your Installation Method
+#### 2. Start the Application
 
-**Option A: Docker with SQLite (Recommended for most users)**
 ```bash
-# Build and start the application
-sudo docker-compose build --no-cache
+# Build and start the application with PostgreSQL
+sudo docker-compose build 
 sudo docker-compose up -d
-
-# Check if it's running
-sudo docker-compose ps
 ```
 
-**Option B: Docker with PostgreSQL (For production/multiple families)**
-1) Create a `.env` file in the project root with:
+**Optional**: Create a `.env` file in the project root to customize settings:
 
 ```
+# PostgreSQL Database Configuration (defaults shown)
 DATABASE_URL=postgresql://wishnest:wishnest123@postgres:5432/wishnest
-# Optional hardening (recommended defaults)
+POSTGRES_DB=wishnest
+POSTGRES_USER=wishnest
+POSTGRES_PASSWORD=wishnest123
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+NEXTAUTH_URL=http://localhost:3002
+NEXTAUTH_SECRET=your-nextauth-secret-change-this-in-production
+
+# Admin Bootstrap (comma-separated emails)
+ADMIN_EMAILS=
+
+# Database operation controls (recommended for production)
 ALLOW_PRISMA_DB_PUSH=false
 ALLOW_PRISMA_FORCE_RESET=false
 ```
 
-2) Start with PostgreSQL database
-
-```bash
-sudo docker-compose --profile postgres up -d
-```
-
-3) Check if both containers are running
+Check if both containers are running:
 
 ```bash
 sudo docker-compose ps
@@ -107,18 +109,14 @@ If you encounter issues:
    npm install
    ```
 
-3. **Setup database** (choose one option)
-
-   **Option A: SQLite (Simple - Recommended for development)**
+3. **Setup PostgreSQL database**
    ```bash
-   npm run db:setup-sqlite
-   ```
-
-   **Option B: PostgreSQL (Production-ready)**
-   ```bash
-   # Install PostgreSQL first, then:
+   # Start PostgreSQL with Docker
+   docker-compose up -d postgres
+   
+   # Setup the database schema
    npm run db:setup-postgresql
-   # Update .env.local with your PostgreSQL credentials
+   # Update .env.local with your PostgreSQL credentials if needed
    ```
 
 4. **Start the application**
@@ -131,16 +129,17 @@ If you encounter issues:
    - Create your family admin account
    - Invite family members via email or share registration links
 
-### Database Options
+### Database
 
-WishNest supports both **SQLite** and **PostgreSQL**:
+WishNest uses **PostgreSQL** for reliable, production-ready data storage:
 
-- **SQLite**: Perfect for small families, no server required, single file
-- **PostgreSQL**: Better for multiple families, production deployment
+- **PostgreSQL**: Robust, scalable database perfect for families and production deployment
+- **Automatic setup**: Docker Compose handles database initialization and schema migration
+- **Data persistence**: Database data is stored in Docker volumes for reliability
 
 ### Docker Compose Configuration
 
-The included `docker-compose.yml` automatically handles both SQLite and PostgreSQL setups:
+The included `docker-compose.yml` automatically handles PostgreSQL setup:
 
 ```yaml
 # Current docker-compose.yml (simplified view)
@@ -151,10 +150,10 @@ services:
     ports:
       - "3002:3000"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-file:./data/wishnest.db}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://wishnest:wishnest123@postgres:5432/wishnest}
       - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production}
-    volumes:  
-      - ./data:/app/data
+    depends_on:
+      - postgres
     restart: unless-stopped
 
   postgres:
@@ -167,8 +166,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    profiles:
-      - postgres
+    restart: unless-stopped
 
 volumes:
   postgres_data: 
@@ -207,7 +205,7 @@ volumes:
 ### Technology Stack
 - **Frontend**: Next.js 15 with React 19
 - **Backend**: Next.js API Routes (Node.js runtime)
-- **Database**: SQLite (default) with PostgreSQL support via Docker
+- **Database**: PostgreSQL with Docker
 - **ORM**: Prisma
 - **Authentication**: JWT-based with bcrypt
 - **UI Components**: Radix UI with Tailwind CSS
