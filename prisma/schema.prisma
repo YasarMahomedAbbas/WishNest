@@ -10,6 +10,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enums for PostgreSQL
+enum FamilyMemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum FamilyMemberStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum ItemPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ReservationStatus {
+  RESERVED
+  PURCHASED
+  CANCELLED
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -56,12 +81,12 @@ model Family {
 }
 
 model FamilyMember {
-  id       String   @id @default(cuid())
+  id       String           @id @default(cuid())
   userId   String
   familyId String
-  role     String   @default("MEMBER")
-  status   String   @default("ACTIVE")
-  joinedAt DateTime @default(now())
+  role     FamilyMemberRole @default(MEMBER)
+  status   FamilyMemberStatus @default(ACTIVE)
+  joinedAt DateTime         @default(now())
 
   // Relationships
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -95,7 +120,7 @@ model WishlistItem {
   price       Decimal?
   productUrl  String?
   imageUrl    String?
-  priority    String   @default("MEDIUM")
+  priority    ItemPriority @default(MEDIUM)
   notes       String?
   userId      String
   categoryId  String
@@ -115,7 +140,7 @@ model ItemReservation {
   id             String   @id @default(cuid())
   wishlistItemId String
   userId         String
-  status         String   @default("RESERVED")
+  status         ReservationStatus @default(RESERVED)
   purchaseNotes  String?
   reservedAt     DateTime @default(now())
   purchasedAt    DateTime?
@@ -154,8 +179,4 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-// Note: SQLite doesn't support enums, so we use strings instead
-// Valid values for role: "ADMIN", "MEMBER"
-// Valid values for status: "ACTIVE", "INACTIVE", "PENDING"  
-// Valid values for priority: "LOW", "MEDIUM", "HIGH", "URGENT"
-// Valid values for reservation status: "RESERVED", "PURCHASED", "CANCELLED" 
+ 

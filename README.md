@@ -36,7 +36,7 @@ sudo docker-compose up -d
 
 **Optional**: Create a `.env` file in the project root to customize settings:
 
-```
+```env
 # PostgreSQL Database Configuration (defaults shown)
 DATABASE_URL=postgresql://wishnest:wishnest123@postgres:5432/wishnest
 POSTGRES_DB=wishnest
@@ -54,6 +54,11 @@ ADMIN_EMAILS=
 # Database operation controls (recommended for production)
 ALLOW_PRISMA_DB_PUSH=false
 ALLOW_PRISMA_FORCE_RESET=false
+```
+
+**For local development**, use `localhost` instead of `postgres` in the DATABASE_URL:
+```env
+DATABASE_URL=postgresql://wishnest:wishnest123@localhost:5432/wishnest
 ```
 
 Check if both containers are running:
@@ -114,9 +119,10 @@ If you encounter issues:
    # Start PostgreSQL with Docker
    docker-compose up -d postgres
    
-   # Setup the database schema
-   npm run db:setup-postgresql
-   # Update .env.local with your PostgreSQL credentials if needed
+   # Run database migrations
+   npx prisma migrate dev
+   # Generate Prisma client
+   npx prisma generate
    ```
 
 4. **Start the application**
@@ -220,8 +226,14 @@ cd wishnest
 # Install dependencies
 npm install
 
-# Set up development database
-docker-compose -f docker-compose.dev.yml up -d
+# Set up PostgreSQL database
+docker-compose up -d postgres
+
+# Run database migrations
+npx prisma migrate dev
+
+# Generate Prisma client  
+npx prisma generate
 
 # Run development server
 npm run dev
