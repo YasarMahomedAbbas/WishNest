@@ -3,6 +3,7 @@ export interface Family {
   name: string
   description: string | null
   inviteCode: string
+  currency: 'USD' | 'EUR' | 'GBP'
   membershipRole: 'ADMIN' | 'MEMBER'
   membershipStatus: string
   joinedAt: string

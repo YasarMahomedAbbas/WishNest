@@ -35,6 +35,12 @@ enum ReservationStatus {
   CANCELLED
 }
 
+enum Currency {
+  USD
+  EUR
+  GBP
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -70,6 +76,7 @@ model Family {
   name        String
   inviteCode  String   @unique
   description String?
+  currency    Currency @default(USD)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

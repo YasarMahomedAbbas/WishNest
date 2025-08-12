@@ -3,6 +3,7 @@ import { createAuthorizationError, createValidationError } from './api-errors'
 import { generateUniqueInviteCode } from './invite-codes'
 import { deleteUser } from './user-service'
 import type { FamilyMemberRole, FamilyMemberStatus } from '@prisma/client'
+import type { Currency } from './currency-utils'
 
 export interface CreateFamilyData {
   name: string
@@ -13,6 +14,7 @@ export interface CreateFamilyData {
 export interface UpdateFamilyData {
   name?: string
   description?: string
+  currency?: Currency
 }
 
 export interface FamilyWithMembers {
@@ -20,6 +22,7 @@ export interface FamilyWithMembers {
   name: string
   description: string | null
   inviteCode: string
+  currency: Currency
   createdAt: Date
   updatedAt: Date
   members: Array<{
@@ -186,6 +189,13 @@ export async function updateFamily(familyId: string, userId: string, data: Updat
     where: { id: familyId },
     data
   })
+}
+
+/**
+ * Updates family currency (admin only)
+ */
+export async function updateFamilyCurrency(familyId: string, userId: string, currency: Currency) {
+  return await updateFamily(familyId, userId, { currency })
 }
 
 /**

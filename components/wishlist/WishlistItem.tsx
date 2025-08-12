@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { AddItemDialog } from "./AddItemDialog"
+import { useFamily } from "@/contexts/FamilyContext"
+import { formatPrice } from "@/lib/currency-utils"
 
 import type { WishlistItem, User, Category } from "./types"
 
@@ -18,6 +20,7 @@ interface WishlistItemProps {
 
 export function WishlistItem({ item, currentUser, categories, onItemUpdated, onItemDeleted }: WishlistItemProps) {
   const { toast } = useToast()
+  const { family } = useFamily()
   const [isLoading, setIsLoading] = useState(false)
   
   const isOwnItem = item.userId === currentUser.id
@@ -160,7 +163,9 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated, onI
       <CardContent className="pt-0">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-1">
-            <span className="price-text text-3xl">${item.price?.toFixed(2) || '0.00'}</span>
+            <span className="price-text text-3xl">
+              {family ? formatPrice(item.price, family.currency) : `$${item.price?.toFixed(2) || '0.00'}`}
+            </span>
           </div>
           <div className="flex gap-2">
             <Button

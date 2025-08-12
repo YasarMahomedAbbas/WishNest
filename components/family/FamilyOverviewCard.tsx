@@ -4,15 +4,17 @@ import { Crown, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { CurrencySelector } from './CurrencySelector'
 import { type Family } from './types'
 
 interface FamilyOverviewCardProps {
   family: Family
   onAdvancedSettings: () => void
+  onFamilyUpdated: (updatedFamily: Partial<Family>) => void
   children?: React.ReactNode // For the InviteDialog
 }
 
-export function FamilyOverviewCard({ family, onAdvancedSettings, children }: FamilyOverviewCardProps) {
+export function FamilyOverviewCard({ family, onAdvancedSettings, onFamilyUpdated, children }: FamilyOverviewCardProps) {
   return (
     <Card className="surface-card">
       <CardHeader>
@@ -53,6 +55,14 @@ export function FamilyOverviewCard({ family, onAdvancedSettings, children }: Fam
             </div>
             <div className="text-sm text-slate-600">You Joined</div>
           </div>
+        </div>
+        
+        {/* Currency Selector */}
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <CurrencySelector 
+            family={family} 
+            onCurrencyUpdated={(currency) => onFamilyUpdated({ currency })}
+          />
         </div>
         
         {family.membershipRole === 'ADMIN' && (

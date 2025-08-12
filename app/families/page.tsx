@@ -224,6 +224,7 @@ function FamiliesPage() {
             <FamilyOverviewCard 
               family={family}
               onAdvancedSettings={() => router.push(`/families/${family.id}`)}
+              onFamilyUpdated={(updates) => setFamily(prev => prev ? { ...prev, ...updates } : prev)}
             >
               <InviteDialog 
                 familyId={family.id}

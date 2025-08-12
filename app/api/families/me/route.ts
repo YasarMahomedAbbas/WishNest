@@ -19,6 +19,7 @@ export const GET = withMiddleware(async (request: NextRequest, { user }) => {
       name: family.name,
       description: family.description,
       inviteCode: family.inviteCode,
+      currency: family.currency,
       createdAt: family.createdAt,
       updatedAt: family.updatedAt,
       membershipRole: family.membershipRole,

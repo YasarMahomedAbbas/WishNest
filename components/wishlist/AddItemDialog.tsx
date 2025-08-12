@@ -27,6 +27,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useFamily } from "@/contexts/FamilyContext"
+import { getCurrencySymbol } from "@/lib/currency-utils"
 
 import { Category, WishlistItem } from "./types"
 
@@ -56,6 +58,7 @@ interface AddItemDialogProps {
 
 export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDeleted, editItem, trigger }: AddItemDialogProps) {
   const { toast } = useToast()
+  const { family } = useFamily()
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -399,7 +402,9 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
                 Price <span className="text-caption font-normal">(Optional)</span>
               </Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground font-medium">
+                  {family ? getCurrencySymbol(family.currency) : '$'}
+                </div>
                 <Input
                   id="price"
                   type="number"
