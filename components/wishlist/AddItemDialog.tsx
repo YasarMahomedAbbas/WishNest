@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, DollarSign, Loader2, Edit, Trash2, AlertCircle } from "lucide-react"
+import { Plus, DollarSign, Loader2, Edit, Trash2, AlertCircle, Link2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,6 +27,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useLinkPreview } from "@/hooks/useLinkPreview"
+import { ProductImage } from "./ProductImage"
 
 import { Category, WishlistItem } from "./types"
 
@@ -35,6 +37,7 @@ interface NewItemData {
   description: string
   price: string
   productUrl: string
+  imageUrl: string
   categoryId: string
 }
 
@@ -64,9 +67,12 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
     description: "",
     price: "",
     productUrl: "",
+    imageUrl: "",
     categoryId: "",
   })
   const [errors, setErrors] = useState<ValidationErrors>({})
+  const [isFetchingPreview, setIsFetchingPreview] = useState(false)
+  const linkPreview = useLinkPreview(newItem.productUrl)
 
   // Validation functions
   const validateTitle = (title: string): string | undefined => {
@@ -163,6 +169,46 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
     return Object.values(currentErrors).some(error => error !== undefined)
   }
 
+  // Handle fetching link preview
+  const handleFetchPreview = async () => {
+    if (!newItem.productUrl || errors.productUrl) {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid URL first",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsFetchingPreview(true)
+    try {
+      await linkPreview.fetchPreview()
+
+      if (linkPreview.error) {
+        toast({
+          title: "Preview Failed",
+          description: linkPreview.error,
+          variant: "destructive",
+        })
+      } else if (linkPreview.data?.imageUrl) {
+        // Auto-populate imageUrl if found
+        setNewItem(prev => ({ ...prev, imageUrl: linkPreview.data?.imageUrl || "" }))
+        toast({
+          title: "Success",
+          description: "Link preview loaded successfully!",
+        })
+      } else {
+        toast({
+          title: "No Image Found",
+          description: "Could not find an image for this URL",
+          variant: "destructive",
+        })
+      }
+    } finally {
+      setIsFetchingPreview(false)
+    }
+  }
+
   // Initialize form with edit data if provided
   useEffect(() => {
     if (editItem) {
@@ -171,6 +217,7 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
         description: editItem.description || "",
         price: editItem.price ? editItem.price.toString() : "",
         productUrl: editItem.productUrl || "",
+        imageUrl: editItem.imageUrl || "",
         categoryId: editItem.categoryId || "",
       }
       setNewItem(itemData)
@@ -188,6 +235,7 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
         description: "",
         price: "",
         productUrl: "",
+        imageUrl: "",
         categoryId: "",
       })
       setErrors({})
@@ -221,6 +269,7 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
           description: newItem.description || undefined,
           price: newItem.price ? parseFloat(newItem.price) : undefined,
           productUrl: newItem.productUrl || undefined,
+          imageUrl: newItem.imageUrl || undefined,
           categoryId: newItem.categoryId,
         }),
       })
@@ -263,6 +312,7 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
           description: "",
           price: "",
           productUrl: "",
+          imageUrl: "",
           categoryId: "",
         })
         setErrors({})
@@ -421,20 +471,70 @@ export function AddItemDialog({ categories, onItemAdded, onItemUpdated, onItemDe
               <Label htmlFor="productUrl" className="text-body font-medium">
                 URL <span className="text-caption font-normal">(Optional)</span>
               </Label>
-              <Input
-                id="productUrl"
-                type="url"
-                placeholder="https://..."
-                value={newItem.productUrl}
-                onChange={(e) => handleInputChange('productUrl', e.target.value)}
-                className={`field-input ${errors.productUrl ? 'border-red-500 focus:border-red-500' : ''}`}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="productUrl"
+                  type="url"
+                  placeholder="https://..."
+                  value={newItem.productUrl}
+                  onChange={(e) => handleInputChange('productUrl', e.target.value)}
+                  className={`field-input flex-1 ${errors.productUrl ? 'border-red-500 focus:border-red-500' : ''}`}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleFetchPreview}
+                  disabled={!newItem.productUrl || !!errors.productUrl || isFetchingPreview}
+                  className="rounded-xl whitespace-nowrap"
+                >
+                  {isFetchingPreview ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Fetching...
+                    </>
+                  ) : (
+                    <>
+                      <Link2 className="w-4 h-4 mr-2" />
+                      Fetch Preview
+                    </>
+                  )}
+                </Button>
+              </div>
               {errors.productUrl && (
                 <div className="flex items-center gap-2 text-sm text-red-600">
                   <AlertCircle className="w-4 h-4" />
                   {errors.productUrl}
                 </div>
               )}
+
+              {/* Image Preview */}
+              {newItem.imageUrl && (
+                <div className="mt-2">
+                  <Label className="text-body font-medium mb-2 block">
+                    Image Preview
+                  </Label>
+                  <ProductImage
+                    src={newItem.imageUrl}
+                    alt={newItem.title || "Product preview"}
+                    className="w-full h-48 rounded-lg"
+                  />
+                </div>
+              )}
+
+              {/* Manual Image URL Override */}
+              <div className="mt-2">
+                <Label htmlFor="imageUrl" className="text-body font-medium">
+                  Image URL <span className="text-caption font-normal">(Optional - auto-filled from link preview)</span>
+                </Label>
+                <Input
+                  id="imageUrl"
+                  type="url"
+                  placeholder="https://..."
+                  value={newItem.imageUrl}
+                  onChange={(e) => handleInputChange('imageUrl', e.target.value)}
+                  className="field-input mt-2"
+                />
+              </div>
             </div>
             <div className="grid gap-3">
               <Label htmlFor="description" className="text-body font-medium">

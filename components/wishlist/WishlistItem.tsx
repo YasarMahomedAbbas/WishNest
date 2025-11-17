@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useState } from "react"
 import { AddItemDialog } from "./AddItemDialog"
+import { ProductImage } from "./ProductImage"
 
 import type { WishlistItem, User, Category } from "./types"
 
@@ -134,6 +135,13 @@ export function WishlistItem({ item, currentUser, categories, onItemUpdated, onI
 
   return (
     <Card className="wishlist-card">
+      {item.imageUrl && (
+        <ProductImage
+          src={item.imageUrl}
+          alt={item.title}
+          className="h-48 rounded-t-xl"
+        />
+      )}
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
           <CardTitle className="wishlist-card-title">
